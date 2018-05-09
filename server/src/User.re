@@ -1,8 +1,5 @@
 /* temporary */
-Aws.update(~region="us-east-2", ~endpoint="http://localhost:8080");
-
-[@bs.scope "JSON"] [@bs.val] external stringify : 'a => string = "";
-
+/* Aws.update(~region="us-east-2", ~endpoint="http://localhost:8080"); */
 type userT = {
   id: string,
   createdDate: string,
@@ -21,26 +18,6 @@ let decodeBody = body =>
   | None => ""
   };
 
-let okResult = body =>
-  AwsLambda.APIGatewayProxy.result(
-    ~statusCode=200,
-    ~body=`Plain(stringify(body)),
-    (),
-  );
-
-let errorResult = (~statusCode=500, message: string) =>
-  AwsLambda.APIGatewayProxy.result(
-    ~statusCode,
-    ~body=`Plain(stringify({"message": message})),
-    (),
-  );
-
-let queryStringParam = (event, paramName) =>
-  Js.Null.toOption(event##queryStringParameters)
-  |> Js.Option.andThen((. queryString) =>
-       Js.Dict.get(queryString, paramName)
-     );
-
 /*
    URL handler functions
  */
@@ -54,9 +31,8 @@ let createUser: AwsLambda.APIGatewayProxy.handler =
 let listUsers: AwsLambda.APIGatewayProxy.handler =
   (event, context, callback) => {
     open Aws.DynamoDb;
-    /* let client = Aws.DynamoDb.documentClient(); */
     let limit =
-      queryStringParam(event, "limit")
+      Aws.queryStringParam(event, "limit")
       |> Js.Option.getWithDefault("100")
       |> int_of_string;
     Js.log2("event", event);
@@ -67,8 +43,8 @@ let listUsers: AwsLambda.APIGatewayProxy.handler =
       |> then_(users => {
            let result =
              switch (Js.Nullable.toOption(users##_Items)) {
-             | Some(items) => okResult(items)
-             | None => errorResult("No users exist in the DB")
+             | Some(items) => Aws.okResult({"items": items})
+             | None => Aws.errorResult("No users exist in the DB")
              };
            resolve(callback(Js.null, result));
          })
@@ -88,7 +64,7 @@ let getUser: AwsLambda.APIGatewayProxy.handler =
         resolve(
           callback(
             Js.null,
-            errorResult(~statusCode=404, "No id was provided"),
+            Aws.errorResult(~statusCode=404, "No id was provided"),
           ),
         )
       | Some(id) =>
@@ -101,8 +77,9 @@ let getUser: AwsLambda.APIGatewayProxy.handler =
         |> then_(user => {
              let result =
                switch (Js.Nullable.toOption(user##_Item)) {
-               | Some(item) => okResult(item)
-               | None => errorResult(~statusCode=404, "No matching id found.")
+               | Some(item) => Aws.okResult(item)
+               | None =>
+                 Aws.errorResult(~statusCode=404, "No matching id found.")
                };
              resolve(callback(Js.null, result));
            })
@@ -110,7 +87,7 @@ let getUser: AwsLambda.APIGatewayProxy.handler =
              Js.log2("Error", e);
              let errToResult = (exn: Js.Promise.error) => {
                let e = Obj.magic(exn);
-               errorResult(e##message);
+               Aws.errorResult(e##message);
              };
              resolve(callback(Js.null, errToResult(e)));
            });

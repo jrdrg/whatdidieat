@@ -27,6 +27,34 @@ custom:
     includeModules: false
     packager: yarn
 
+
+resources:
+  Resources:
+    entitiesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: WhatDidIEat
+        AttributeDefinitions:
+          - AttributeName: entity_id
+            AttributeType: S
+          - AttributeName: related_entity_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: entity_id
+            KeyType: HASH
+          - AttributeName: related_entity_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1        
+  Outputs:
+    entitiesTableArn:
+      Description: The ARN for the entity table
+      Value:
+        "Fn::GetAtt": [ entitiesTable, Arn ]
+      Export:
+        Name: ${self:service}:${opt:stage, self:provider.stage}:entitiesTableArn
+
 provider:
   name: aws
   runtime: nodejs6.10
@@ -35,21 +63,20 @@ provider:
   stage: dev
   region: us-east-2
 
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:Query"
+        - "dynamodb:Scan"
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+      Resource:
+        Fn::GetAtt:
+          - entitiesTable
+          - Arn
+
 
 # you can define service wide environment variables here
 #  environment:
@@ -91,6 +118,8 @@ functions:
           method: get
           request:
             parameters:
+              querystrings:
+                limit: false
               paths:
                 id: true
 
@@ -126,15 +155,3 @@ functions:
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"

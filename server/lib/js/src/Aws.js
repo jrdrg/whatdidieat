@@ -2,6 +2,9 @@
 'use strict';
 
 var AwsSdk = require("aws-sdk");
+var AwsLambda = require("@ahrefs/bs-aws-lambda/lib/js/src/awsLambda.bs.js");
+var Js_option = require("bs-platform/lib/js/js_option.js");
+var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
 
 function update(region, endpoint) {
   AwsSdk.config.update({
@@ -52,6 +55,32 @@ var DynamoDb = /* module */[
   /* scan */scan
 ];
 
+function okResult(body) {
+  return AwsLambda.APIGatewayProxy[/* result */0](/* None */0, /* `Plain */[
+              -675583510,
+              JSON.stringify(body)
+            ], 200, /* () */0);
+}
+
+function errorResult($staropt$star, message) {
+  var statusCode = $staropt$star ? $staropt$star[0] : 500;
+  return AwsLambda.APIGatewayProxy[/* result */0](/* None */0, /* `Plain */[
+              -675583510,
+              JSON.stringify({
+                    message: message
+                  })
+            ], statusCode, /* () */0);
+}
+
+function queryStringParam($$event, paramName) {
+  return Js_option.andThen((function (queryString) {
+                return Js_primitive.undefined_to_opt(queryString[paramName]);
+              }), Js_primitive.null_to_opt($$event.queryStringParameters));
+}
+
 exports.update = update;
 exports.DynamoDb = DynamoDb;
+exports.okResult = okResult;
+exports.errorResult = errorResult;
+exports.queryStringParam = queryStringParam;
 /* aws-sdk Not a pure module */

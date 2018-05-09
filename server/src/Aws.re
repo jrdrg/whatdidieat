@@ -71,3 +71,23 @@ module DynamoDb = {
          )
     );
 };
+
+let okResult = body =>
+  AwsLambda.APIGatewayProxy.result(
+    ~statusCode=200,
+    ~body=`Plain(Util.stringify(body)),
+    (),
+  );
+
+let errorResult = (~statusCode=500, message: string) =>
+  AwsLambda.APIGatewayProxy.result(
+    ~statusCode,
+    ~body=`Plain(Util.stringify({"message": message})),
+    (),
+  );
+
+let queryStringParam = (event, paramName) =>
+  Js.Null.toOption(event##queryStringParameters)
+  |> Js.Option.andThen((. queryString) =>
+       Js.Dict.get(queryString, paramName)
+     );
