@@ -22,6 +22,10 @@ function decodeBody(body) {
   }
 }
 
+function errToResult(exn) {
+  return Aws$Server.errorResult(/* None */0, /* None */0, exn.message);
+}
+
 function createUser($$event, _, _$1) {
   var body = decodeBody($$event.body);
   console.log(body);
@@ -32,12 +36,15 @@ function listUsers($$event, context, callback) {
   var limit = Caml_format.caml_int_of_string(Js_option.getWithDefault("100", Aws$Server.queryStringParam($$event, "limit")));
   console.log("event", $$event);
   console.log("context", context);
-  return Aws$Server.DynamoDb[/* scan */1](/* Some */[limit], "WhatDidIEat", new (AwsSdk.DynamoDB.DocumentClient)()).then((function (users) {
-                var match = users.Items;
-                var result = (match == null) ? Aws$Server.errorResult(/* None */0, "No users exist in the DB") : Aws$Server.okResult({
-                        items: match
-                      });
-                return Promise.resolve(Curry._2(callback, null, result));
+  return Aws$Server.DynamoDb[/* scan */2](/* Some */[limit], "WhatDidIEat", new (AwsSdk.DynamoDB.DocumentClient)()).then((function (users) {
+                  var match = users.Items;
+                  var result = (match == null) ? Aws$Server.errorResult(/* None */0, /* None */0, "No users exist in the DB") : Aws$Server.okResult({
+                          items: match
+                        });
+                  return Promise.resolve(Curry._2(callback, null, result));
+                })).catch((function (e) {
+                console.log("Error", e);
+                return Promise.resolve(Curry._2(callback, null, errToResult(e)));
               }));
 }
 
@@ -46,27 +53,25 @@ function getUser($$event, _, callback) {
   var match = userIdFromUrl($$event.pathParameters);
   if (match) {
     var userId = "User_" + match[0];
-    return Aws$Server.DynamoDb[/* get */0]("WhatDidIEat", {
+    return Aws$Server.DynamoDb[/* get */1]("WhatDidIEat", {
                     entity_id: userId,
                     related_entity_id: userId
                   }, new (AwsSdk.DynamoDB.DocumentClient)()).then((function (user) {
                     var match = user.Item;
-                    var result = (match == null) ? Aws$Server.errorResult(/* Some */[404], "No matching id found.") : Aws$Server.okResult(match);
+                    var result = (match == null) ? Aws$Server.errorResult(/* Some */[404], /* None */0, "No matching id found.") : Aws$Server.okResult(match);
                     return Promise.resolve(Curry._2(callback, null, result));
                   })).catch((function (e) {
                   console.log("Error", e);
-                  var errToResult = function (exn) {
-                    return Aws$Server.errorResult(/* None */0, exn.message);
-                  };
                   return Promise.resolve(Curry._2(callback, null, errToResult(e)));
                 }));
   } else {
-    return Promise.resolve(Curry._2(callback, null, Aws$Server.errorResult(/* Some */[404], "No id was provided")));
+    return Promise.resolve(Curry._2(callback, null, Aws$Server.errorResult(/* Some */[404], /* None */0, "No id was provided")));
   }
 }
 
 exports.userIdFromUrl = userIdFromUrl;
 exports.decodeBody = decodeBody;
+exports.errToResult = errToResult;
 exports.createUser = createUser;
 exports.listUsers = listUsers;
 exports.getUser = getUser;

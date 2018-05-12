@@ -9,14 +9,20 @@ type userT = {
 };
 
 let userIdFromUrl = (parameters: Js.Null.t(Js.Dict.t(string))) =>
-  Js.Null.toOption(parameters)
+  parameters
+  |> Js.Null.toOption
   |> Js.Option.andThen((. p) => Js.Dict.get(p, "id"));
 
 let decodeBody = body =>
-  switch (Js.Null.toOption(body)) {
+  switch (body |> Js.Null.toOption) {
   | Some(b) => b
   | None => ""
   };
+
+let errToResult = (exn: Js.Promise.error) => {
+  let e = Obj.magic(exn);
+  Aws.errorResult(e##message);
+};
 
 /*
    URL handler functions
@@ -42,11 +48,15 @@ let listUsers: AwsLambda.APIGatewayProxy.handler =
       |> scan(~limit, "WhatDidIEat")
       |> then_(users => {
            let result =
-             switch (Js.Nullable.toOption(users##_Items)) {
+             switch (users##_Items |> Js.Nullable.toOption) {
              | Some(items) => Aws.okResult({"items": items})
              | None => Aws.errorResult("No users exist in the DB")
              };
            resolve(callback(Js.null, result));
+         })
+      |> catch(e => {
+           Js.log2("Error", e);
+           resolve(callback(Js.null, errToResult(e)));
          })
     );
   };
@@ -76,7 +86,7 @@ let getUser: AwsLambda.APIGatewayProxy.handler =
            )
         |> then_(user => {
              let result =
-               switch (Js.Nullable.toOption(user##_Item)) {
+               switch (user##_Item |> Js.Nullable.toOption) {
                | Some(item) => Aws.okResult(item)
                | None =>
                  Aws.errorResult(~statusCode=404, "No matching id found.")
@@ -85,10 +95,6 @@ let getUser: AwsLambda.APIGatewayProxy.handler =
            })
         |> catch(e => {
              Js.log2("Error", e);
-             let errToResult = (exn: Js.Promise.error) => {
-               let e = Obj.magic(exn);
-               Aws.errorResult(e##message);
-             };
              resolve(callback(Js.null, errToResult(e)));
            });
       }

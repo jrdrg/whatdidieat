@@ -1,24 +1,8 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: whatdidieat
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
 
 plugins:
   - serverless-webpack
+  #- serverless-dynamodb-local
   - serverless-offline
 
 custom:
@@ -26,34 +10,6 @@ custom:
     webpackConfig: "webpack.config.js"
     includeModules: false
     packager: yarn
-
-
-resources:
-  Resources:
-    entitiesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: WhatDidIEat
-        AttributeDefinitions:
-          - AttributeName: entity_id
-            AttributeType: S
-          - AttributeName: related_entity_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: entity_id
-            KeyType: HASH
-          - AttributeName: related_entity_id
-            KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1        
-  Outputs:
-    entitiesTableArn:
-      Description: The ARN for the entity table
-      Value:
-        "Fn::GetAtt": [ entitiesTable, Arn ]
-      Export:
-        Name: ${self:service}:${opt:stage, self:provider.stage}:entitiesTableArn
 
 provider:
   name: aws
@@ -64,14 +20,14 @@ provider:
   region: us-east-2
 
   iamRoleStatements:
-    - Effect: "Allow"
+    - Effect: Allow
       Action:
-        - "dynamodb:Query"
-        - "dynamodb:Scan"
-        - "dynamodb:GetItem"
-        - "dynamodb:PutItem"
-        - "dynamodb:UpdateItem"
-        - "dynamodb:DeleteItem"
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
       Resource:
         Fn::GetAtt:
           - entitiesTable
@@ -98,30 +54,66 @@ functions:
       - http:
           path: hello
           method: get
+          cors: true
   createUser:
     handler: lib/js/src/User.createUser
     events:
       - http:
           path: user
           method: post
+          cors: true
   listUsers:
     handler: lib/js/src/User.listUsers
     events:
       - http:
           path: users
           method: get
+          cors: true
+          authorizer:
+            arn: arn:aws:cognito-idp:us-east-2:150092540173:userpool/us-east-2_ScBS6jS5q
   getUser:
     handler: lib/js/src/User.getUser
     events:
       - http:
           path: user/{id}
           method: get
+          cors: true
           request:
             parameters:
               querystrings:
                 limit: false
               paths:
                 id: true
+
+resources:
+  Resources:
+    entitiesTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: WhatDidIEat
+        AttributeDefinitions:
+          - AttributeName: entity_id
+            AttributeType: S
+          - AttributeName: related_entity_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: entity_id
+            KeyType: HASH
+          - AttributeName: related_entity_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+  Outputs:
+    entitiesTableArn:
+      Description: The ARN for the entity table
+      Value:
+        Fn::GetAtt:
+          - entitiesTable
+          - Arn
+      Export:
+        Name: ${self:service}:${opt:stage, self:provider.stage}:entitiesTableArn
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
