@@ -25,10 +25,15 @@ function configure(identityPoolId, region, userPoolId, userPoolWebClientId) {
 }
 
 function signIn(username, password) {
-  return Auth.default.signIn(username, password).then((function (success) {
-                console.log("Success!");
-                console.log(success);
-                return Promise.resolve(success);
+  return Auth.default.signIn(username, password).then((function (result) {
+                console.log(result);
+                var challengeName = result.challengeName;
+                if (challengeName == null) {
+                  console.log("no challenge");
+                } else {
+                  console.log("Challenge", challengeName);
+                }
+                return Promise.resolve(result);
               }));
 }
 

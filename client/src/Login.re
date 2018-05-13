@@ -1,7 +1,19 @@
 type loginStatusT =
   | LoggedIn(string)
   | LoginError(string)
+  | ResetPassword
   | NotLoggedIn;
+
+type loginType =
+  | SignUp
+  | LogIn;
+
+type action =
+  | Login
+  | LoginFailed(string)
+  | LoginSuccess(string)
+  | ChangeUsername(string)
+  | ChangePassword(string);
 
 type state = {
   loginStatus: loginStatusT,
@@ -9,15 +21,30 @@ type state = {
   password: string,
 };
 
-type action =
-  | Login(string, string)
-  | LoginFailed(string)
-  | LoginSuccess(string)
-  | ChangeUsername(string)
-  | ChangePassword(string);
+let targetToValue = target =>
+  target |> ReactDOMRe.domElementToObj |> (o => o##value);
 
 let errorMessage = (~error, ~visible) =>
   visible ? <div> (ReasonReact.string(error)) </div> : ReasonReact.null;
+
+let input = (~caption, ~onEnter, ~onBlur) => {
+  let loginOnEnter = e => {
+    let keyCode = e |> ReactEventRe.Keyboard.key;
+    if (keyCode == "Enter") {
+      onBlur(e |> ReactEventRe.Keyboard.currentTarget |> targetToValue);
+      onEnter();
+    };
+  };
+  <div>
+    (ReasonReact.string(caption))
+    <input
+      onKeyDown=loginOnEnter
+      onBlur=(
+        e => onBlur(e |> ReactEventRe.Focus.currentTarget |> targetToValue)
+      )
+    />
+  </div>;
+};
 
 let component = ReasonReact.reducerComponent("Login");
 
@@ -26,24 +53,23 @@ let make = (~onLoginSuccess, _children) => {
   initialState: () => {loginStatus: NotLoggedIn, username: "", password: ""},
   reducer: (action: action, state: state) =>
     switch (action) {
-    | Login(username, password) =>
+    | Login =>
       ReasonReact.UpdateWithSideEffects(
         state,
         (
           self => {
-            Js.log("trying to login");
-            Js.log("do stuff with aws here");
-            /* let details =
-               Aws.Cognito.authData(~username="test", ~password="test"); */
-            /* Aws.Cognito.details(details); */
+            let {username, password} = self.state;
+            Js.log2(username, password);
             Js.Promise.(
               Aws.Amplify.signIn(~username, ~password)
-              |> then_(result => resolve(Js.log2("Login result: ", result)))
+              |> then_(result
+                   /* self.send(LoginSuccess(result)); */
+                   => resolve(Js.log2("Login result: ", result)))
               |> catch(err => {
                    Js.log(err);
                    let errMsg = Js.String.make(err);
                    self.send(LoginFailed(errMsg));
-                   Js.Promise.resolve();
+                   resolve();
                  })
               |> ignore
             );
@@ -60,21 +86,22 @@ let make = (~onLoginSuccess, _children) => {
     | ChangeUsername(username) => ReasonReact.Update({...state, username})
     | ChangePassword(password) => ReasonReact.Update({...state, password})
     },
-  render: self => {
-    let eventToString = e =>
-      e
-      |> ReactEventRe.Focus.currentTarget
-      |> ReactDOMRe.domElementToObj
-      |> (o => o##value);
+  render: self =>
     <div className="login">
-      <div>
-        (ReasonReact.string("username"))
-        <input onBlur=(e => self.send(ChangeUsername(eventToString(e)))) />
-      </div>
-      <div>
-        (ReasonReact.string("password"))
-        <input onBlur=(e => self.send(ChangePassword(eventToString(e)))) />
-      </div>
+      (
+        input(
+          ~caption="Username",
+          ~onBlur=value => self.send(ChangeUsername(value)),
+          ~onEnter=_e => self.send(Login),
+        )
+      )
+      (
+        input(
+          ~caption="Password",
+          ~onBlur=value => self.send(ChangePassword(value)),
+          ~onEnter=_e => self.send(Login),
+        )
+      )
       (
         switch (self.state.loginStatus) {
         | LoginError(error) => errorMessage(~error, ~visible=true)
@@ -82,14 +109,9 @@ let make = (~onLoginSuccess, _children) => {
         }
       )
       <div>
-        <button
-          className="login-button"
-          onClick=(
-            _e => self.send(Login(self.state.username, self.state.password))
-          )>
+        <button className="login-button" onClick=(_e => self.send(Login))>
           (ReasonReact.string("Login"))
         </button>
       </div>
-    </div>;
-  },
+    </div>,
 };

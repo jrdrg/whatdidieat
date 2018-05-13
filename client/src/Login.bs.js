@@ -7,12 +7,34 @@ var React = require("react");
 var ReasonReact = require("reason-react/src/ReasonReact.js");
 var Aws$WhatDidIEat = require("./Aws.bs.js");
 
+function targetToValue(target) {
+  return target.value;
+}
+
 function errorMessage(error, visible) {
   if (visible) {
     return React.createElement("div", undefined, error);
   } else {
     return null;
   }
+}
+
+function input(caption, onEnter, onBlur) {
+  var loginOnEnter = function (e) {
+    var keyCode = e.key;
+    if (keyCode === "Enter") {
+      Curry._1(onBlur, e.currentTarget.value);
+      return Curry._1(onEnter, /* () */0);
+    } else {
+      return 0;
+    }
+  };
+  return React.createElement("div", undefined, caption, React.createElement("input", {
+                  onKeyDown: loginOnEnter,
+                  onBlur: (function (e) {
+                      return Curry._1(onBlur, e.currentTarget.value);
+                    })
+                }));
 }
 
 var component = ReasonReact.reducerComponent("Login");
@@ -31,87 +53,86 @@ function make(onLoginSuccess, _) {
           /* render */(function (self) {
               var match = self[/* state */1][/* loginStatus */0];
               var tmp;
-              tmp = typeof match === "number" || !match.tag ? null : errorMessage(match[0], true);
+              tmp = typeof match === "number" || match.tag !== 1 ? null : errorMessage(match[0], true);
               return React.createElement("div", {
                           className: "login"
-                        }, React.createElement("div", undefined, "username", React.createElement("input", {
-                                  onBlur: (function (e) {
-                                      return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(3, [e.currentTarget.value]));
-                                    })
-                                })), React.createElement("div", undefined, "password", React.createElement("input", {
-                                  onBlur: (function (e) {
-                                      return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [e.currentTarget.value]));
-                                    })
-                                })), tmp, React.createElement("div", undefined, React.createElement("button", {
+                        }, input("Username", (function () {
+                                return Curry._1(self[/* send */3], /* Login */0);
+                              }), (function (value) {
+                                return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(2, [value]));
+                              })), input("Password", (function () {
+                                return Curry._1(self[/* send */3], /* Login */0);
+                              }), (function (value) {
+                                return Curry._1(self[/* send */3], /* ChangePassword */Block.__(3, [value]));
+                              })), tmp, React.createElement("div", undefined, React.createElement("button", {
                                   className: "login-button",
                                   onClick: (function () {
-                                      return Curry._1(self[/* send */3], /* Login */Block.__(0, [
-                                                    self[/* state */1][/* username */1],
-                                                    self[/* state */1][/* password */2]
-                                                  ]));
+                                      return Curry._1(self[/* send */3], /* Login */0);
                                     })
                                 }, "Login")));
             }),
           /* initialState */(function () {
               return /* record */[
-                      /* loginStatus : NotLoggedIn */0,
+                      /* loginStatus : NotLoggedIn */1,
                       /* username */"",
                       /* password */""
                     ];
             }),
           /* retainedProps */component[/* retainedProps */11],
           /* reducer */(function (action, state) {
-              switch (action.tag | 0) {
-                case 0 : 
-                    var password = action[1];
-                    var username = action[0];
-                    return /* UpdateWithSideEffects */Block.__(2, [
-                              state,
-                              (function (self) {
-                                  console.log("trying to login");
-                                  console.log("do stuff with aws here");
-                                  Aws$WhatDidIEat.Amplify[/* signIn */1](username, password).then((function (result) {
-                                            return Promise.resolve((console.log("Login result: ", result), /* () */0));
-                                          })).catch((function (err) {
-                                          console.log(err);
-                                          var errMsg = String(err);
-                                          Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [errMsg]));
-                                          return Promise.resolve(/* () */0);
-                                        }));
-                                  return /* () */0;
-                                })
-                            ]);
-                case 1 : 
-                    return /* Update */Block.__(0, [/* record */[
-                                /* loginStatus : LoginError */Block.__(1, [action[0]]),
-                                /* username */state[/* username */1],
-                                /* password */state[/* password */2]
-                              ]]);
-                case 2 : 
-                    var token = action[0];
-                    return /* UpdateWithSideEffects */Block.__(2, [
-                              /* record */[
-                                /* loginStatus : LoggedIn */Block.__(0, [token]),
-                                /* username */state[/* username */1],
-                                /* password */state[/* password */2]
-                              ],
-                              (function () {
-                                  return Curry._1(onLoginSuccess, token);
-                                })
-                            ]);
-                case 3 : 
-                    return /* Update */Block.__(0, [/* record */[
-                                /* loginStatus */state[/* loginStatus */0],
-                                /* username */action[0],
-                                /* password */state[/* password */2]
-                              ]]);
-                case 4 : 
-                    return /* Update */Block.__(0, [/* record */[
-                                /* loginStatus */state[/* loginStatus */0],
-                                /* username */state[/* username */1],
-                                /* password */action[0]
-                              ]]);
-                
+              if (typeof action === "number") {
+                return /* UpdateWithSideEffects */Block.__(2, [
+                          state,
+                          (function (self) {
+                              var match = self[/* state */1];
+                              var password = match[/* password */2];
+                              var username = match[/* username */1];
+                              console.log(username, password);
+                              Aws$WhatDidIEat.Amplify[/* signIn */1](username, password).then((function (result) {
+                                        return Promise.resolve((console.log("Login result: ", result), /* () */0));
+                                      })).catch((function (err) {
+                                      console.log(err);
+                                      var errMsg = String(err);
+                                      Curry._1(self[/* send */3], /* LoginFailed */Block.__(0, [errMsg]));
+                                      return Promise.resolve(/* () */0);
+                                    }));
+                              return /* () */0;
+                            })
+                        ]);
+              } else {
+                switch (action.tag | 0) {
+                  case 0 : 
+                      return /* Update */Block.__(0, [/* record */[
+                                  /* loginStatus : LoginError */Block.__(1, [action[0]]),
+                                  /* username */state[/* username */1],
+                                  /* password */state[/* password */2]
+                                ]]);
+                  case 1 : 
+                      var token = action[0];
+                      return /* UpdateWithSideEffects */Block.__(2, [
+                                /* record */[
+                                  /* loginStatus : LoggedIn */Block.__(0, [token]),
+                                  /* username */state[/* username */1],
+                                  /* password */state[/* password */2]
+                                ],
+                                (function () {
+                                    return Curry._1(onLoginSuccess, token);
+                                  })
+                              ]);
+                  case 2 : 
+                      return /* Update */Block.__(0, [/* record */[
+                                  /* loginStatus */state[/* loginStatus */0],
+                                  /* username */action[0],
+                                  /* password */state[/* password */2]
+                                ]]);
+                  case 3 : 
+                      return /* Update */Block.__(0, [/* record */[
+                                  /* loginStatus */state[/* loginStatus */0],
+                                  /* username */state[/* username */1],
+                                  /* password */action[0]
+                                ]]);
+                  
+                }
               }
             }),
           /* subscriptions */component[/* subscriptions */13],
@@ -119,7 +140,9 @@ function make(onLoginSuccess, _) {
         ];
 }
 
+exports.targetToValue = targetToValue;
 exports.errorMessage = errorMessage;
+exports.input = input;
 exports.component = component;
 exports.make = make;
 /* component Not a pure module */

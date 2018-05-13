@@ -36,7 +36,7 @@ function listUsers($$event, context, callback) {
   var limit = Caml_format.caml_int_of_string(Js_option.getWithDefault("100", Aws$Server.queryStringParam($$event, "limit")));
   console.log("event", $$event);
   console.log("context", context);
-  return Aws$Server.DynamoDb[/* scan */2](/* Some */[limit], "WhatDidIEat", new (AwsSdk.DynamoDB.DocumentClient)()).then((function (users) {
+  return Aws$Server.DynamoDb[/* scan */1](/* Some */[limit], "WhatDidIEat", new (AwsSdk.DynamoDB.DocumentClient)()).then((function (users) {
                   var match = users.Items;
                   var result = (match == null) ? Aws$Server.errorResult(/* None */0, /* None */0, "No users exist in the DB") : Aws$Server.okResult({
                           items: match
@@ -53,7 +53,7 @@ function getUser($$event, _, callback) {
   var match = userIdFromUrl($$event.pathParameters);
   if (match) {
     var userId = "User_" + match[0];
-    return Aws$Server.DynamoDb[/* get */1]("WhatDidIEat", {
+    return Aws$Server.DynamoDb[/* get */0]("WhatDidIEat", {
                     entity_id: userId,
                     related_entity_id: userId
                   }, new (AwsSdk.DynamoDB.DocumentClient)()).then((function (user) {

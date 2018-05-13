@@ -5,6 +5,7 @@ var AwsSdk = require("aws-sdk");
 var AwsLambda = require("@ahrefs/bs-aws-lambda/lib/js/src/awsLambda.bs.js");
 var Js_option = require("bs-platform/lib/js/js_option.js");
 var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
+var Js_null_undefined = require("bs-platform/lib/js/js_null_undefined.js");
 
 function update(region, endpoint) {
   AwsSdk.config.update({
@@ -62,12 +63,13 @@ function okResult(body) {
             ], 200, /* () */0);
 }
 
-function errorResult($staropt$star, message) {
+function errorResult($staropt$star, requestId, message) {
   var statusCode = $staropt$star ? $staropt$star[0] : 500;
   return AwsLambda.APIGatewayProxy[/* result */0](/* None */0, /* `Plain */[
               -675583510,
               JSON.stringify({
-                    message: message
+                    message: message,
+                    requestId: Js_null_undefined.fromOption(requestId)
                   })
             ], statusCode, /* () */0);
 }

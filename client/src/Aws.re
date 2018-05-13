@@ -19,6 +19,11 @@ module Amplify = {
     "_Username": string,
     "_Password": string,
   };
+  type loginResultT;
+  type loginResult =
+    | LoginSuccessful(loginResultT)
+    | LoginError
+    | LoginChallenge(string);
   [@bs.module "aws-amplify/lib/Auth"] [@bs.scope "default"]
   external configure : 'a => unit = "";
   let configure =
@@ -40,9 +45,14 @@ module Amplify = {
   external signIn : (string, string) => Js.Promise.t('a) = "";
   let signIn = (~username: string, ~password: string) =>
     signIn(username, password)
-    |> Js.Promise.then_(success => {
-         Js.log("Success!");
-         Js.log(success);
-         Js.Promise.resolve(success);
+    |> Js.Promise.then_(result => {
+         Js.log(result);
+         let challengeName: option(string) =
+           result##challengeName |> Js.Nullable.toOption;
+         switch (challengeName) {
+         | Some(challenge) => Js.log2("Challenge", challenge)
+         | None => Js.log("no challenge")
+         };
+         Js.Promise.resolve(result);
        });
 };

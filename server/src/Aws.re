@@ -1,8 +1,3 @@
-/*AWS.config.update({
-      region: "us-west-2",
-      endpoint: "http://localhost:8000"
-  });
-  */
 type configT = {
   .
   "region": string,
@@ -79,15 +74,23 @@ let okResult = body =>
     (),
   );
 
-let errorResult = (~statusCode=500, message: string) =>
+let errorResult =
+    (~statusCode=500, ~requestId: option(string)=?, message: string) =>
   AwsLambda.APIGatewayProxy.result(
     ~statusCode,
-    ~body=`Plain(Util.stringify({"message": message})),
+    ~body=
+      `Plain(
+        Util.stringify({
+          "message": message,
+          "requestId": requestId |> Js.Nullable.fromOption,
+        }),
+      ),
     (),
   );
 
 let queryStringParam = (event, paramName) =>
-  Js.Null.toOption(event##queryStringParameters)
+  event##queryStringParameters
+  |> Js.Null.toOption
   |> Js.Option.andThen((. queryString) =>
        Js.Dict.get(queryString, paramName)
      );
