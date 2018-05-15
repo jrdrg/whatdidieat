@@ -4,7 +4,8 @@
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world"
+    "clean": "bsb -clean-world",
+    "test": "jest"
   },
   "keywords": [
     "BuckleScript"
@@ -12,6 +13,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@glennsl/bs-jest": "^0.4.2",
     "bs-platform": "^3.0.0",
     "serverless-dynamodb-local": "^0.2.30",
     "serverless-offline": "^3.20.3",
@@ -20,6 +22,7 @@
   },
   "dependencies": {
     "@ahrefs/bs-aws-lambda": "^0.8.0",
+    "@glennsl/bs-json": "^1.3.2",
     "aws-sdk": "^2.234.1",
     "bs-uuid": "^0.3.0"
   }
