@@ -80,9 +80,11 @@ function queryStringParam($$event, paramName) {
               }), Js_primitive.null_to_opt($$event.queryStringParameters));
 }
 
+update("us-east-2", "http://localhost:8000");
+
 exports.update = update;
 exports.DynamoDb = DynamoDb;
 exports.okResult = okResult;
 exports.errorResult = errorResult;
 exports.queryStringParam = queryStringParam;
-/* aws-sdk Not a pure module */
+/*  Not a pure module */

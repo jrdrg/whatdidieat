@@ -94,3 +94,6 @@ let queryStringParam = (event, paramName) =>
   |> Js.Option.andThen((. queryString) =>
        Js.Dict.get(queryString, paramName)
      );
+
+/* temporary */
+update(~region="us-east-2", ~endpoint="http://localhost:8000");
