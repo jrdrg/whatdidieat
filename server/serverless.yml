@@ -59,7 +59,7 @@ functions:
     handler: lib/js/src/User.createUser
     events:
       - http:
-          path: user
+          path: users
           method: post
           cors: true
   listUsers:
@@ -75,7 +75,7 @@ functions:
     handler: lib/js/src/User.getUser
     events:
       - http:
-          path: user/{id}
+          path: users/{id}
           method: get
           cors: true
           request:
@@ -87,6 +87,10 @@ functions:
 
 resources:
   Resources:
+    # userPool:
+    #   Type: AWS::Cognito::UserPool
+    #   Properties:
+    #     UserPoolName: ${self:service}-
     entitiesTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
