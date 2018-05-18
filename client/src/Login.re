@@ -25,31 +25,36 @@ type state = {
   password: string,
 };
 
-let targetToValue = target =>
-  target |> ReactDOMRe.domElementToObj |> (o => o##value);
-
-let errorMessage = (~error, ~visible) =>
-  visible ? <div> (ReasonReact.string(error)) </div> : ReasonReact.null;
-
-let input = (~caption, ~_type="text", ~onEnter, ~onBlur, ()) => {
-  let loginOnEnter = e => {
+module Input = {
+  let targetToValue = target =>
+    target |> ReactDOMRe.domElementToObj |> (o => o##value);
+  let handleEnter = (~onBlur, ~onEnter, e) => {
     let keyCode = e |> ReactEventRe.Keyboard.key;
     if (keyCode == "Enter") {
       onBlur(e |> ReactEventRe.Keyboard.currentTarget |> targetToValue);
       onEnter();
     };
   };
-  <div>
-    (ReasonReact.string(caption))
-    <input
-      _type
-      onKeyDown=loginOnEnter
-      onBlur=(
-        e => onBlur(e |> ReactEventRe.Focus.currentTarget |> targetToValue)
-      )
-    />
-  </div>;
+  let component = ReasonReact.statelessComponent("Input");
+  let make = (~caption, ~_type="text", ~onEnter, ~onBlur, _children) => {
+    ...component,
+    render: _self =>
+      <div>
+        (ReasonReact.string(caption))
+        <input
+          _type
+          onKeyDown=(handleEnter(~onBlur, ~onEnter))
+          onBlur=(
+            e =>
+              onBlur(e |> ReactEventRe.Focus.currentTarget |> targetToValue)
+          )
+        />
+      </div>,
+  };
 };
+
+let errorMessage = (~error, ~visible) =>
+  visible ? <div> (ReasonReact.string(error)) </div> : ReasonReact.null;
 
 let component = ReasonReact.reducerComponent("Login");
 
@@ -58,8 +63,7 @@ let make = (~onLoginSuccess, _children) => {
   initialState: () => {loginStatus: NotLoggedIn, username: "", password: ""},
   reducer: (action: action, state: state) =>
     switch (action) {
-    | ChangeView(_view) =>
-      ReasonReact.NoUpdate
+    | ChangeView(_view) => ReasonReact.NoUpdate
     | Login =>
       ReasonReact.UpdateWithSideEffects(
         {...state, loginStatus: LoginInProgress},
@@ -70,21 +74,18 @@ let make = (~onLoginSuccess, _children) => {
             switch (self.state.loginStatus) {
             | ChangingPassword =>
               /* Js.Promise.(
-                Aws.Amplify.currentAuthenticatedUser()
-                |> then_(user => Aws.Amplify.changePassword(~oldPassword=password, ~newPassword=password, user))
-                /* |> then_(result => {
-                  Js.log2("result", result);
-                  resolve();
-                }) */
-              ); */
-                /* Js.Promise.resolve() */
-                ()
+                   Aws.Amplify.currentAuthenticatedUser()
+                   |> then_(user => Aws.Amplify.changePassword(~oldPassword=password, ~newPassword=password, user))
+                   /* |> then_(result => {
+                     Js.log2("result", result);
+                     resolve();
+                   }) */
+                 ); */
+              /* Js.Promise.resolve() */
+              ()
             | _ =>
               Js.Promise.(
-                Aws.Amplify.signIn(
-                  ~username,
-                  ~password,
-                )
+                Aws.Amplify.signIn(~username, ~password)
                 |> then_(result => {
                      Aws.Amplify.(
                        switch (result) {
@@ -92,14 +93,26 @@ let make = (~onLoginSuccess, _children) => {
                        | LoginChallenge(data) =>
                          Js.log2("challenge", data);
                          self.send(ResetPassword);
-                       | LoginFailure(error) => Js.log2("error", error)
+                       | LoginFailure(error) =>
+                         switch (error) {
+                         | Message(msg) => self.send(LoginFailed(msg))
+                         | Response(res) =>
+                           self.send(
+                             LoginFailed(
+                               res
+                               |> Js.Json.stringifyAny
+                               |> Js.Option.getWithDefault(""),
+                             ),
+                           )
+                         }
                        }
                      );
-                     resolve(Js.log2("Login result: ", result));
+                     resolve();
                    })
                 |> catch(err => {
                      Js.log(err);
-                     let errMsg = Js.String.make(err);
+                     let errMsg =
+                       "An error occurred: " ++ Js.String.make(err);
                      self.send(LoginFailed(errMsg));
                      resolve();
                    })
@@ -125,22 +138,16 @@ let make = (~onLoginSuccess, _children) => {
     /* helper components */
     let inputs =
       <div>
-        (
-          input(
-            ~caption="Username",
-            ~onBlur=value => self.send(ChangeUsername(value)),
-            ~onEnter=_e => self.send(Login),
-            (),
-          )
-        )
-        (
-          input(
-            ~caption="Password",
-            ~onBlur=value => self.send(ChangePassword(value)),
-            ~onEnter=_e => self.send(Login),
-            (),
-          )
-        )
+        <Input
+          caption="Username"
+          onBlur=(value => self.send(ChangeUsername(value)))
+          onEnter=(_e => self.send(Login))
+        />
+        <Input
+          caption="Password"
+          onBlur=(value => self.send(ChangePassword(value)))
+          onEnter=(_e => self.send(Login))
+        />
       </div>;
     let loginButton =
       <div>
@@ -163,14 +170,11 @@ let make = (~onLoginSuccess, _children) => {
         | ChangingPassword =>
           <div>
             <div> (ReasonReact.string("reset password")) </div>
-            (
-              input(
-                ~caption="new password",
-                ~onBlur=value => self.send(ChangePassword(value)),
-                ~onEnter=_e => self.send(Login),
-                (),
-              )
-            )
+            <Input
+              caption="new password"
+              onBlur=(value => self.send(ChangePassword(value)))
+              onEnter=(_e => self.send(Login))
+            />
             loginButton
           </div>
         | _ => <div> inputs loginButton </div>

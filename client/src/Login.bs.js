@@ -4,44 +4,29 @@
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var React = require("react");
+var Js_option = require("bs-platform/lib/js/js_option.js");
 var ReasonReact = require("reason-react/src/ReasonReact.js");
+var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
 var Aws$WhatDidIEat = require("./Aws.bs.js");
 
 function targetToValue(target) {
   return target.value;
 }
 
-function errorMessage(error, visible) {
-  if (visible) {
-    return React.createElement("div", undefined, error);
+function handleEnter(onBlur, onEnter, e) {
+  var keyCode = e.key;
+  if (keyCode === "Enter") {
+    Curry._1(onBlur, e.currentTarget.value);
+    return Curry._1(onEnter, /* () */0);
   } else {
-    return null;
+    return 0;
   }
 }
 
-function input(caption, $staropt$star, onEnter, onBlur, _) {
+var component = ReasonReact.statelessComponent("Input");
+
+function make(caption, $staropt$star, onEnter, onBlur, _) {
   var _type = $staropt$star ? $staropt$star[0] : "text";
-  var loginOnEnter = function (e) {
-    var keyCode = e.key;
-    if (keyCode === "Enter") {
-      Curry._1(onBlur, e.currentTarget.value);
-      return Curry._1(onEnter, /* () */0);
-    } else {
-      return 0;
-    }
-  };
-  return React.createElement("div", undefined, caption, React.createElement("input", {
-                  type: _type,
-                  onKeyDown: loginOnEnter,
-                  onBlur: (function (e) {
-                      return Curry._1(onBlur, e.currentTarget.value);
-                    })
-                }));
-}
-
-var component = ReasonReact.reducerComponent("Login");
-
-function make(onLoginSuccess, _) {
   return /* record */[
           /* debugName */component[/* debugName */0],
           /* reactClassInternal */component[/* reactClassInternal */1],
@@ -52,16 +37,63 @@ function make(onLoginSuccess, _) {
           /* willUnmount */component[/* willUnmount */6],
           /* willUpdate */component[/* willUpdate */7],
           /* shouldUpdate */component[/* shouldUpdate */8],
+          /* render */(function () {
+              return React.createElement("div", undefined, caption, React.createElement("input", {
+                              type: _type,
+                              onKeyDown: (function (param) {
+                                  return handleEnter(onBlur, onEnter, param);
+                                }),
+                              onBlur: (function (e) {
+                                  return Curry._1(onBlur, e.currentTarget.value);
+                                })
+                            }));
+            }),
+          /* initialState */component[/* initialState */10],
+          /* retainedProps */component[/* retainedProps */11],
+          /* reducer */component[/* reducer */12],
+          /* subscriptions */component[/* subscriptions */13],
+          /* jsElementWrapped */component[/* jsElementWrapped */14]
+        ];
+}
+
+var Input = /* module */[
+  /* targetToValue */targetToValue,
+  /* handleEnter */handleEnter,
+  /* component */component,
+  /* make */make
+];
+
+function errorMessage(error, visible) {
+  if (visible) {
+    return React.createElement("div", undefined, error);
+  } else {
+    return null;
+  }
+}
+
+var component$1 = ReasonReact.reducerComponent("Login");
+
+function make$1(onLoginSuccess, _) {
+  return /* record */[
+          /* debugName */component$1[/* debugName */0],
+          /* reactClassInternal */component$1[/* reactClassInternal */1],
+          /* handedOffState */component$1[/* handedOffState */2],
+          /* willReceiveProps */component$1[/* willReceiveProps */3],
+          /* didMount */component$1[/* didMount */4],
+          /* didUpdate */component$1[/* didUpdate */5],
+          /* willUnmount */component$1[/* willUnmount */6],
+          /* willUpdate */component$1[/* willUpdate */7],
+          /* shouldUpdate */component$1[/* shouldUpdate */8],
           /* render */(function (self) {
-              var inputs = React.createElement("div", undefined, input("Username", /* None */0, (function () {
-                          return Curry._1(self[/* send */3], /* Login */0);
-                        }), (function (value) {
-                          return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(3, [value]));
-                        }), /* () */0), input("Password", /* None */0, (function () {
-                          return Curry._1(self[/* send */3], /* Login */0);
-                        }), (function (value) {
-                          return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
-                        }), /* () */0));
+              var inputs = React.createElement("div", undefined, ReasonReact.element(/* None */0, /* None */0, make("Username", /* None */0, (function () {
+                              return Curry._1(self[/* send */3], /* Login */0);
+                            }), (function (value) {
+                              return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(3, [value]));
+                            }), /* array */[])), ReasonReact.element(/* None */0, /* None */0, make("Password", /* None */0, (function () {
+                              return Curry._1(self[/* send */3], /* Login */0);
+                            }), (function (value) {
+                              return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
+                            }), /* array */[])));
               var loginButton = React.createElement("div", undefined, React.createElement("button", {
                         className: "login-button",
                         onClick: (function () {
@@ -79,11 +111,11 @@ function make(onLoginSuccess, _) {
                       tmp = React.createElement("div", undefined, "logging in...");
                       break;
                   case 2 : 
-                      tmp = React.createElement("div", undefined, React.createElement("div", undefined, "reset password"), input("new password", /* None */0, (function () {
-                                  return Curry._1(self[/* send */3], /* Login */0);
-                                }), (function (value) {
-                                  return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
-                                }), /* () */0), loginButton);
+                      tmp = React.createElement("div", undefined, React.createElement("div", undefined, "reset password"), ReasonReact.element(/* None */0, /* None */0, make("new password", /* None */0, (function () {
+                                      return Curry._1(self[/* send */3], /* Login */0);
+                                    }), (function (value) {
+                                      return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
+                                    }), /* array */[])), loginButton);
                       break;
                   
                 }
@@ -101,7 +133,7 @@ function make(onLoginSuccess, _) {
                       /* password */""
                     ];
             }),
-          /* retainedProps */component[/* retainedProps */11],
+          /* retainedProps */component$1[/* retainedProps */11],
           /* reducer */(function (action, state) {
               if (typeof action === "number") {
                 if (action === 0) {
@@ -113,7 +145,9 @@ function make(onLoginSuccess, _) {
                             ],
                             (function (self) {
                                 var match = self[/* state */1];
-                                console.log(match[/* username */1], match[/* password */2]);
+                                var password = match[/* password */2];
+                                var username = match[/* username */1];
+                                console.log(username, password);
                                 var match$1 = self[/* state */1][/* loginStatus */0];
                                 var exit = 0;
                                 if (typeof match$1 === "number" && match$1 >= 2) {
@@ -122,13 +156,18 @@ function make(onLoginSuccess, _) {
                                   exit = 1;
                                 }
                                 if (exit === 1) {
-                                  Aws$WhatDidIEat.Amplify[/* signIn */1]("jrodriguez", "Testtest1!").then((function (result) {
+                                  Aws$WhatDidIEat.Amplify[/* signIn */1](username, password).then((function (result) {
                                             switch (result.tag | 0) {
                                               case 0 : 
                                                   console.log("success", result[0]);
                                                   break;
                                               case 1 : 
-                                                  console.log("error", result[0]);
+                                                  var error = result[0];
+                                                  if (error.tag) {
+                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [Js_option.getWithDefault("", Js_primitive.undefined_to_opt(JSON.stringify(error[0])))]));
+                                                  } else {
+                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [error[0]]));
+                                                  }
                                                   break;
                                               case 2 : 
                                                   console.log("challenge", result[0]);
@@ -136,10 +175,10 @@ function make(onLoginSuccess, _) {
                                                   break;
                                               
                                             }
-                                            return Promise.resolve((console.log("Login result: ", result), /* () */0));
+                                            return Promise.resolve(/* () */0);
                                           })).catch((function (err) {
                                           console.log(err);
-                                          var errMsg = String(err);
+                                          var errMsg = "An error occurred: " + String(err);
                                           Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [errMsg]));
                                           return Promise.resolve(/* () */0);
                                         }));
@@ -193,14 +232,13 @@ function make(onLoginSuccess, _) {
                 }
               }
             }),
-          /* subscriptions */component[/* subscriptions */13],
-          /* jsElementWrapped */component[/* jsElementWrapped */14]
+          /* subscriptions */component$1[/* subscriptions */13],
+          /* jsElementWrapped */component$1[/* jsElementWrapped */14]
         ];
 }
 
-exports.targetToValue = targetToValue;
+exports.Input = Input;
 exports.errorMessage = errorMessage;
-exports.input = input;
-exports.component = component;
-exports.make = make;
+exports.component = component$1;
+exports.make = make$1;
 /* component Not a pure module */
