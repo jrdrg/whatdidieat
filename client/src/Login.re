@@ -1,3 +1,24 @@
+module Input = {
+  let targetToValue = target =>
+    target |> ReactDOMRe.domElementToObj |> (o => o##value);
+  let component = ReasonReact.statelessComponent("Input");
+  let make = (~caption, ~_type="text", ~onChange, ~value, _children) => {
+    ...component,
+    render: _self =>
+      <div>
+        (ReasonReact.string(caption))
+        <input
+          _type
+          value
+          onChange=(
+            e =>
+              e |> ReactEventRe.Form.currentTarget |> targetToValue |> onChange
+          )
+        />
+      </div>,
+  };
+};
+
 type loginType =
   | NewUser
   | ExistingUser
@@ -8,49 +29,22 @@ type loginStatusT =
   | LoginInProgress
   | LoggedIn(string)
   | LoginError(string)
-  | ChangingPassword;
+  | ChangingPassword(Aws.Amplify.userT, string);
 
 type action =
   | Login
-  | ResetPassword
-  | ChangeView(loginType)
   | LoginFailed(string)
   | LoginSuccess(string)
+  | ChangeView(loginType)
   | ChangeUsername(string)
-  | ChangePassword(string);
+  | ChangePassword(string)
+  | ResetPassword(Aws.Amplify.userT, string, string)
+  | NewPassword(Aws.Amplify.userT, string);
 
 type state = {
   loginStatus: loginStatusT,
   username: string,
   password: string,
-};
-
-module Input = {
-  let targetToValue = target =>
-    target |> ReactDOMRe.domElementToObj |> (o => o##value);
-  let handleEnter = (~onBlur, ~onEnter, e) => {
-    let keyCode = e |> ReactEventRe.Keyboard.key;
-    if (keyCode == "Enter") {
-      onBlur(e |> ReactEventRe.Keyboard.currentTarget |> targetToValue);
-      onEnter();
-    };
-  };
-  let component = ReasonReact.statelessComponent("Input");
-  let make = (~caption, ~_type="text", ~onEnter, ~onBlur, _children) => {
-    ...component,
-    render: _self =>
-      <div>
-        (ReasonReact.string(caption))
-        <input
-          _type
-          onKeyDown=(handleEnter(~onBlur, ~onEnter))
-          onBlur=(
-            e =>
-              onBlur(e |> ReactEventRe.Focus.currentTarget |> targetToValue)
-          )
-        />
-      </div>,
-  };
 };
 
 let errorMessage = (~error, ~visible) =>
@@ -72,27 +66,21 @@ let make = (~onLoginSuccess, _children) => {
             let {username, password} = self.state;
             Js.log2(username, password);
             switch (self.state.loginStatus) {
-            | ChangingPassword =>
-              /* Js.Promise.(
-                   Aws.Amplify.currentAuthenticatedUser()
-                   |> then_(user => Aws.Amplify.changePassword(~oldPassword=password, ~newPassword=password, user))
-                   /* |> then_(result => {
-                     Js.log2("result", result);
-                     resolve();
-                   }) */
-                 ); */
-              /* Js.Promise.resolve() */
-              ()
-            | _ =>
+            | ChangingPassword(_user, newPassword) =>
+              Js.log2("Changing password", newPassword)
+            | NotLoggedIn => Js.log("Not logged in!!!")
+            | LoggedIn(login) => Js.log2("Logged in", login)
+            | LoginError(error) => Js.log2("Login error", error)
+            | LoginInProgress =>
               Js.Promise.(
                 Aws.Amplify.signIn(~username, ~password)
                 |> then_(result => {
                      Aws.Amplify.(
                        switch (result) {
                        | LoginSuccessful(data) => Js.log2("success", data)
-                       | LoginChallenge(data) =>
-                         Js.log2("challenge", data);
-                         self.send(ResetPassword);
+                       | LoginChallenge(data, user) =>
+                         Js.log3("challenge", data, user);
+                         self.send(NewPassword(user, ""));
                        | LoginFailure(error) =>
                          switch (error) {
                          | Message(msg) => self.send(LoginFailed(msg))
@@ -122,8 +110,6 @@ let make = (~onLoginSuccess, _children) => {
           }
         ),
       )
-    | ResetPassword =>
-      ReasonReact.Update({...state, loginStatus: ChangingPassword})
     | LoginFailed(error) =>
       ReasonReact.Update({...state, loginStatus: LoginError(error)})
     | LoginSuccess(token) =>
@@ -133,53 +119,84 @@ let make = (~onLoginSuccess, _children) => {
       )
     | ChangeUsername(username) => ReasonReact.Update({...state, username})
     | ChangePassword(password) => ReasonReact.Update({...state, password})
+    | ResetPassword(user, oldPassword, newPassword) =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, loginStatus: LoginInProgress},
+        (
+          _self => {
+            /* Aws.Amplify.changePassword(~oldPassword, ~newPassword, user) */
+            Aws.Amplify.completeNewPassword(~newPassword, user) |> ignore;
+            /* |> then_(result => {
+                 Js.log2("result", result);
+                 resolve();
+               }) */
+            ();
+          }
+        ),
+      )
+    | NewPassword(user, newPassword) =>
+      ReasonReact.Update({
+        ...state,
+        loginStatus: ChangingPassword(user, newPassword),
+      })
     },
   render: self => {
     /* helper components */
-    let inputs =
+    let inputs = (username, password) =>
       <div>
         <Input
+          value=username
           caption="Username"
-          onBlur=(value => self.send(ChangeUsername(value)))
-          onEnter=(_e => self.send(Login))
+          onChange=(value => self.send(ChangeUsername(value)))
         />
         <Input
+          value=password
           caption="Password"
-          onBlur=(value => self.send(ChangePassword(value)))
-          onEnter=(_e => self.send(Login))
+          onChange=(value => self.send(ChangePassword(value)))
         />
       </div>;
-    let loginButton =
+    let loginButton = (~onClick) =>
       <div>
-        <button className="login-button" onClick=(_e => self.send(Login))>
+        <button className="login-button" onClick>
           (ReasonReact.string("Login"))
         </button>
       </div>;
     /* render login form */
-    <div className="login">
+    <form
+      className="login" onSubmit=(e => ReactEventRe.Form.preventDefault(e))>
       (
         switch (self.state.loginStatus) {
         | LoginInProgress =>
-          <div> (ReasonReact.string("logging in...")) </div>
+          <div> (ReasonReact.string("Logging in...")) </div>
         | LoginError(error) =>
           <div>
-            inputs
+            (inputs(self.state.username, self.state.password))
             (errorMessage(~error, ~visible=true))
-            loginButton
+            (loginButton(~onClick=_e => self.send(Login)))
           </div>
-        | ChangingPassword =>
+        | ChangingPassword(user, newPassword) =>
           <div>
-            <div> (ReasonReact.string("reset password")) </div>
+            <div> (ReasonReact.string("Reset password")) </div>
             <Input
-              caption="new password"
-              onBlur=(value => self.send(ChangePassword(value)))
-              onEnter=(_e => self.send(Login))
+              value=newPassword
+              caption="New password"
+              onChange=(value => self.send(NewPassword(user, value)))
             />
-            loginButton
+            (
+              loginButton(~onClick=_e =>
+                self.send(
+                  ResetPassword(user, self.state.password, newPassword),
+                )
+              )
+            )
           </div>
-        | _ => <div> inputs loginButton </div>
+        | _ =>
+          <div>
+            (inputs(self.state.username, self.state.password))
+            (loginButton(~onClick=_e => self.send(Login)))
+          </div>
         }
       )
-    </div>;
+    </form>;
   },
 };

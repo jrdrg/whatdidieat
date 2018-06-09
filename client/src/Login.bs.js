@@ -13,19 +13,9 @@ function targetToValue(target) {
   return target.value;
 }
 
-function handleEnter(onBlur, onEnter, e) {
-  var keyCode = e.key;
-  if (keyCode === "Enter") {
-    Curry._1(onBlur, e.currentTarget.value);
-    return Curry._1(onEnter, /* () */0);
-  } else {
-    return 0;
-  }
-}
-
 var component = ReasonReact.statelessComponent("Input");
 
-function make(caption, $staropt$star, onEnter, onBlur, _) {
+function make(caption, $staropt$star, onChange, value, _) {
   var _type = $staropt$star ? $staropt$star[0] : "text";
   return /* record */[
           /* debugName */component[/* debugName */0],
@@ -40,11 +30,9 @@ function make(caption, $staropt$star, onEnter, onBlur, _) {
           /* render */(function () {
               return React.createElement("div", undefined, caption, React.createElement("input", {
                               type: _type,
-                              onKeyDown: (function (param) {
-                                  return handleEnter(onBlur, onEnter, param);
-                                }),
-                              onBlur: (function (e) {
-                                  return Curry._1(onBlur, e.currentTarget.value);
+                              value: value,
+                              onChange: (function (e) {
+                                  return Curry._1(onChange, e.currentTarget.value);
                                 })
                             }));
             }),
@@ -58,7 +46,6 @@ function make(caption, $staropt$star, onEnter, onBlur, _) {
 
 var Input = /* module */[
   /* targetToValue */targetToValue,
-  /* handleEnter */handleEnter,
   /* component */component,
   /* make */make
 ];
@@ -85,45 +72,68 @@ function make$1(onLoginSuccess, _) {
           /* willUpdate */component$1[/* willUpdate */7],
           /* shouldUpdate */component$1[/* shouldUpdate */8],
           /* render */(function (self) {
-              var inputs = React.createElement("div", undefined, ReasonReact.element(/* None */0, /* None */0, make("Username", /* None */0, (function () {
-                              return Curry._1(self[/* send */3], /* Login */0);
-                            }), (function (value) {
-                              return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(3, [value]));
-                            }), /* array */[])), ReasonReact.element(/* None */0, /* None */0, make("Password", /* None */0, (function () {
-                              return Curry._1(self[/* send */3], /* Login */0);
-                            }), (function (value) {
-                              return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
-                            }), /* array */[])));
-              var loginButton = React.createElement("div", undefined, React.createElement("button", {
-                        className: "login-button",
-                        onClick: (function () {
-                            return Curry._1(self[/* send */3], /* Login */0);
-                          })
-                      }, "Login"));
+              var inputs = function (username, password) {
+                return React.createElement("div", undefined, ReasonReact.element(/* None */0, /* None */0, make("Username", /* None */0, (function (value) {
+                                      return Curry._1(self[/* send */3], /* ChangeUsername */Block.__(3, [value]));
+                                    }), username, /* array */[])), ReasonReact.element(/* None */0, /* None */0, make("Password", /* None */0, (function (value) {
+                                      return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
+                                    }), password, /* array */[])));
+              };
+              var loginButton = function (onClick) {
+                return React.createElement("div", undefined, React.createElement("button", {
+                                className: "login-button",
+                                onClick: onClick
+                              }, "Login"));
+              };
               var match = self[/* state */1][/* loginStatus */0];
               var tmp;
+              var exit = 0;
               if (typeof match === "number") {
-                switch (match) {
+                if (match === 0) {
+                  exit = 1;
+                } else {
+                  tmp = React.createElement("div", undefined, "Logging in...");
+                }
+              } else {
+                switch (match.tag | 0) {
                   case 0 : 
-                      tmp = React.createElement("div", undefined, inputs, loginButton);
+                      exit = 1;
                       break;
                   case 1 : 
-                      tmp = React.createElement("div", undefined, "logging in...");
+                      tmp = React.createElement("div", undefined, inputs(self[/* state */1][/* username */1], self[/* state */1][/* password */2]), errorMessage(match[0], true), loginButton((function () {
+                                  return Curry._1(self[/* send */3], /* Login */0);
+                                })));
                       break;
                   case 2 : 
-                      tmp = React.createElement("div", undefined, React.createElement("div", undefined, "reset password"), ReasonReact.element(/* None */0, /* None */0, make("new password", /* None */0, (function () {
-                                      return Curry._1(self[/* send */3], /* Login */0);
-                                    }), (function (value) {
-                                      return Curry._1(self[/* send */3], /* ChangePassword */Block.__(4, [value]));
-                                    }), /* array */[])), loginButton);
+                      var newPassword = match[1];
+                      var user = match[0];
+                      tmp = React.createElement("div", undefined, React.createElement("div", undefined, "Reset password"), ReasonReact.element(/* None */0, /* None */0, make("New password", /* None */0, (function (value) {
+                                      return Curry._1(self[/* send */3], /* NewPassword */Block.__(6, [
+                                                    user,
+                                                    value
+                                                  ]));
+                                    }), newPassword, /* array */[])), loginButton((function () {
+                                  return Curry._1(self[/* send */3], /* ResetPassword */Block.__(5, [
+                                                user,
+                                                self[/* state */1][/* password */2],
+                                                newPassword
+                                              ]));
+                                })));
                       break;
                   
                 }
-              } else {
-                tmp = match.tag ? React.createElement("div", undefined, inputs, errorMessage(match[0], true), loginButton) : React.createElement("div", undefined, inputs, loginButton);
               }
-              return React.createElement("div", {
-                          className: "login"
+              if (exit === 1) {
+                tmp = React.createElement("div", undefined, inputs(self[/* state */1][/* username */1], self[/* state */1][/* password */2]), loginButton((function () {
+                            return Curry._1(self[/* send */3], /* Login */0);
+                          })));
+              }
+              return React.createElement("form", {
+                          className: "login",
+                          onSubmit: (function (e) {
+                              e.preventDefault();
+                              return /* () */0;
+                            })
                         }, tmp);
             }),
           /* initialState */(function () {
@@ -136,27 +146,24 @@ function make$1(onLoginSuccess, _) {
           /* retainedProps */component$1[/* retainedProps */11],
           /* reducer */(function (action, state) {
               if (typeof action === "number") {
-                if (action === 0) {
-                  return /* UpdateWithSideEffects */Block.__(2, [
-                            /* record */[
-                              /* loginStatus : LoginInProgress */1,
-                              /* username */state[/* username */1],
-                              /* password */state[/* password */2]
-                            ],
-                            (function (self) {
-                                var match = self[/* state */1];
-                                var password = match[/* password */2];
-                                var username = match[/* username */1];
-                                console.log(username, password);
-                                var match$1 = self[/* state */1][/* loginStatus */0];
-                                var exit = 0;
-                                if (typeof match$1 === "number" && match$1 >= 2) {
+                return /* UpdateWithSideEffects */Block.__(2, [
+                          /* record */[
+                            /* loginStatus : LoginInProgress */1,
+                            /* username */state[/* username */1],
+                            /* password */state[/* password */2]
+                          ],
+                          (function (self) {
+                              var match = self[/* state */1];
+                              var password = match[/* password */2];
+                              var username = match[/* username */1];
+                              console.log(username, password);
+                              var match$1 = self[/* state */1][/* loginStatus */0];
+                              if (typeof match$1 === "number") {
+                                if (match$1 === 0) {
+                                  console.log("Not logged in!!!");
                                   return /* () */0;
                                 } else {
-                                  exit = 1;
-                                }
-                                if (exit === 1) {
-                                  Aws$WhatDidIEat.Amplify[/* signIn */1](username, password).then((function (result) {
+                                  Aws$WhatDidIEat.Amplify[/* signIn */4](username, password).then((function (result) {
                                             switch (result.tag | 0) {
                                               case 0 : 
                                                   console.log("success", result[0]);
@@ -164,14 +171,18 @@ function make$1(onLoginSuccess, _) {
                                               case 1 : 
                                                   var error = result[0];
                                                   if (error.tag) {
-                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [Js_option.getWithDefault("", Js_primitive.undefined_to_opt(JSON.stringify(error[0])))]));
+                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(0, [Js_option.getWithDefault("", Js_primitive.undefined_to_opt(JSON.stringify(error[0])))]));
                                                   } else {
-                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [error[0]]));
+                                                    Curry._1(self[/* send */3], /* LoginFailed */Block.__(0, [error[0]]));
                                                   }
                                                   break;
                                               case 2 : 
-                                                  console.log("challenge", result[0]);
-                                                  Curry._1(self[/* send */3], /* ResetPassword */1);
+                                                  var user = result[1];
+                                                  console.log("challenge", result[0], user);
+                                                  Curry._1(self[/* send */3], /* NewPassword */Block.__(6, [
+                                                          user,
+                                                          ""
+                                                        ]));
                                                   break;
                                               
                                             }
@@ -179,32 +190,36 @@ function make$1(onLoginSuccess, _) {
                                           })).catch((function (err) {
                                           console.log(err);
                                           var errMsg = "An error occurred: " + String(err);
-                                          Curry._1(self[/* send */3], /* LoginFailed */Block.__(1, [errMsg]));
+                                          Curry._1(self[/* send */3], /* LoginFailed */Block.__(0, [errMsg]));
                                           return Promise.resolve(/* () */0);
                                         }));
                                   return /* () */0;
                                 }
-                                
-                              })
-                          ]);
-                } else {
-                  return /* Update */Block.__(0, [/* record */[
-                              /* loginStatus : ChangingPassword */2,
-                              /* username */state[/* username */1],
-                              /* password */state[/* password */2]
-                            ]]);
-                }
+                              } else {
+                                switch (match$1.tag | 0) {
+                                  case 0 : 
+                                      console.log("Logged in", match$1[0]);
+                                      return /* () */0;
+                                  case 1 : 
+                                      console.log("Login error", match$1[0]);
+                                      return /* () */0;
+                                  case 2 : 
+                                      console.log("Changing password", match$1[1]);
+                                      return /* () */0;
+                                  
+                                }
+                              }
+                            })
+                        ]);
               } else {
                 switch (action.tag | 0) {
                   case 0 : 
-                      return /* NoUpdate */0;
-                  case 1 : 
                       return /* Update */Block.__(0, [/* record */[
                                   /* loginStatus : LoginError */Block.__(1, [action[0]]),
                                   /* username */state[/* username */1],
                                   /* password */state[/* password */2]
                                 ]]);
-                  case 2 : 
+                  case 1 : 
                       var token = action[0];
                       return /* UpdateWithSideEffects */Block.__(2, [
                                 /* record */[
@@ -216,6 +231,8 @@ function make$1(onLoginSuccess, _) {
                                     return Curry._1(onLoginSuccess, token);
                                   })
                               ]);
+                  case 2 : 
+                      return /* NoUpdate */0;
                   case 3 : 
                       return /* Update */Block.__(0, [/* record */[
                                   /* loginStatus */state[/* loginStatus */0],
@@ -227,6 +244,29 @@ function make$1(onLoginSuccess, _) {
                                   /* loginStatus */state[/* loginStatus */0],
                                   /* username */state[/* username */1],
                                   /* password */action[0]
+                                ]]);
+                  case 5 : 
+                      var newPassword = action[2];
+                      var user = action[0];
+                      return /* UpdateWithSideEffects */Block.__(2, [
+                                /* record */[
+                                  /* loginStatus : LoginInProgress */1,
+                                  /* username */state[/* username */1],
+                                  /* password */state[/* password */2]
+                                ],
+                                (function () {
+                                    Aws$WhatDidIEat.Amplify[/* completeNewPassword */3](user, newPassword);
+                                    return /* () */0;
+                                  })
+                              ]);
+                  case 6 : 
+                      return /* Update */Block.__(0, [/* record */[
+                                  /* loginStatus : ChangingPassword */Block.__(2, [
+                                      action[0],
+                                      action[1]
+                                    ]),
+                                  /* username */state[/* username */1],
+                                  /* password */state[/* password */2]
                                 ]]);
                   
                 }

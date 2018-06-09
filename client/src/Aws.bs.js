@@ -18,6 +18,81 @@ function authData(username, password) {
 
 var Cognito = /* module */[/* authData */authData];
 
+function errorToObj(err) {
+  var match = Js_json.classify(err);
+  var exit = 0;
+  if (typeof match === "number") {
+    exit = 1;
+  } else {
+    switch (match.tag | 0) {
+      case 0 : 
+          return /* Message */Block.__(0, [match[0]]);
+      case 2 : 
+          var obj = match[0];
+          var l = List.map(Js_null_undefined.fromOption, List.map((function (param) {
+                      return Js_option.andThen(Js_json.decodeString, param);
+                    }), List.map((function (param) {
+                          return Js_primitive.undefined_to_opt(obj[param]);
+                        }), /* :: */[
+                        "code",
+                        /* :: */[
+                          "message",
+                          /* :: */[
+                            "name",
+                            /* [] */0
+                          ]
+                        ]
+                      ])));
+          var match$1;
+          if (l) {
+            var match$2 = l[1];
+            if (match$2) {
+              var match$3 = match$2[1];
+              match$1 = match$3 ? (
+                  match$3[1] ? /* tuple */[
+                      null,
+                      null,
+                      null
+                    ] : /* tuple */[
+                      l[0],
+                      match$2[0],
+                      match$3[0]
+                    ]
+                ) : /* tuple */[
+                  null,
+                  null,
+                  null
+                ];
+            } else {
+              match$1 = /* tuple */[
+                null,
+                null,
+                null
+              ];
+            }
+          } else {
+            match$1 = /* tuple */[
+              null,
+              null,
+              null
+            ];
+          }
+          return /* Response */Block.__(1, [{
+                      code: match$1[0],
+                      message: match$1[1],
+                      name: match$1[2]
+                    }]);
+      default:
+        exit = 1;
+    }
+  }
+  if (exit === 1) {
+    var errMsg = Js_option.getWithDefault("", Js_primitive.undefined_to_opt(JSON.stringify(err)));
+    return /* Message */Block.__(0, ["An error occurred: " + errMsg]);
+  }
+  
+}
+
 function configure(identityPoolId, region, userPoolId, userPoolWebClientId) {
   Auth.default.configure({
         Auth: {
@@ -30,98 +105,45 @@ function configure(identityPoolId, region, userPoolId, userPoolWebClientId) {
   return /* () */0;
 }
 
+function changePassword(user, oldPassword, newPassword) {
+  return Auth.default.changePassword(user, oldPassword, newPassword).then((function (result) {
+                  console.log("Ok", result);
+                  return Promise.resolve(/* PasswordChanged */0);
+                })).catch((function (err) {
+                console.log("Error", err);
+                return Promise.resolve(/* PasswordChangeError */[errorToObj(err)]);
+              }));
+}
+
+function completeNewPassword(user, newPassword) {
+  return Auth.default.completeNewPassword(user, newPassword).then((function (result) {
+                  console.log("OK!", result);
+                  return Promise.resolve(/* PasswordChanged */0);
+                })).catch((function (err) {
+                console.log("Error completing new password", err);
+                return Promise.resolve(/* PasswordChangeError */[errorToObj(err)]);
+              }));
+}
+
 function signIn(username, password) {
   return Auth.default.signIn(username, password).then((function (result) {
                   console.log(result);
                   var match = result.challengeName;
-                  return Promise.resolve((match == null) ? /* LoginSuccessful */Block.__(0, [result]) : /* LoginChallenge */Block.__(2, [match]));
+                  return Promise.resolve((match == null) ? /* LoginSuccessful */Block.__(0, [result]) : /* LoginChallenge */Block.__(2, [
+                                  match,
+                                  result
+                                ]));
                 })).catch((function (err) {
-                var match = Js_json.classify(err);
-                var tmp;
-                var exit = 0;
-                if (typeof match === "number") {
-                  exit = 1;
-                } else {
-                  switch (match.tag | 0) {
-                    case 0 : 
-                        tmp = /* LoginFailure */Block.__(1, [/* Message */Block.__(0, [match[0]])]);
-                        break;
-                    case 2 : 
-                        var obj = match[0];
-                        var l = List.map(Js_null_undefined.fromOption, List.map((function (param) {
-                                    return Js_option.andThen(Js_json.decodeString, param);
-                                  }), List.map((function (param) {
-                                        return Js_primitive.undefined_to_opt(obj[param]);
-                                      }), /* :: */[
-                                      "code",
-                                      /* :: */[
-                                        "message",
-                                        /* :: */[
-                                          "name",
-                                          /* [] */0
-                                        ]
-                                      ]
-                                    ])));
-                        var match$1;
-                        if (l) {
-                          var match$2 = l[1];
-                          if (match$2) {
-                            var match$3 = match$2[1];
-                            match$1 = match$3 ? (
-                                match$3[1] ? /* tuple */[
-                                    null,
-                                    null,
-                                    null
-                                  ] : /* tuple */[
-                                    l[0],
-                                    match$2[0],
-                                    match$3[0]
-                                  ]
-                              ) : /* tuple */[
-                                null,
-                                null,
-                                null
-                              ];
-                          } else {
-                            match$1 = /* tuple */[
-                              null,
-                              null,
-                              null
-                            ];
-                          }
-                        } else {
-                          match$1 = /* tuple */[
-                            null,
-                            null,
-                            null
-                          ];
-                        }
-                        tmp = /* LoginFailure */Block.__(1, [/* Response */Block.__(1, [{
-                                  code: match$1[0],
-                                  message: match$1[1],
-                                  name: match$1[2]
-                                }])]);
-                        break;
-                    default:
-                      exit = 1;
-                  }
-                }
-                if (exit === 1) {
-                  var errMsg = Js_option.getWithDefault("", Js_primitive.undefined_to_opt(JSON.stringify(err)));
-                  tmp = /* LoginFailure */Block.__(1, [/* Message */Block.__(0, ["An error occurred: " + errMsg])]);
-                }
-                return Promise.resolve(tmp);
+                return Promise.resolve(/* LoginFailure */Block.__(1, [errorToObj(err)]));
               }));
 }
 
-function changePassword(oldPassword, newPassword, user) {
-  return Auth.changePassword(user, oldPassword, newPassword);
-}
-
 var Amplify = /* module */[
+  /* errorToObj */errorToObj,
   /* configure */configure,
-  /* signIn */signIn,
-  /* changePassword */changePassword
+  /* changePassword */changePassword,
+  /* completeNewPassword */completeNewPassword,
+  /* signIn */signIn
 ];
 
 exports.Cognito = Cognito;
