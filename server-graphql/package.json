@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.50",
+    "apollo-server-lambda": "^2.12.0",
+    "aws-sdk": "^2.683.0",
+    "dotenv": "^8.2.0",
+    "graphql": "^15.0.0",
+    "serverless-appsync-plugin": "^1.2.0",
+    "uuid": "^8.1.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^1.14.0",
+    "@graphql-codegen/typescript-operations": "^1.14.0",
+    "@types/uuid": "^8.0.0",
+    "prettier": "^2.0.4",
+    "serverless-dotenv-plugin": "^2.4.2",
+    "serverless-dynamodb-local": "^0.2.39",
+    "serverless-offline": "^5.0.0",
+    "serverless-plugin-typescript": "^1.1.9",
+    "typescript": "^3.8.3"
+  },
+  "scripts": {
+    "localdb": "serverless dynamodb start",
+    "localdb-migrate": "serverless dynamodb start --migrate"
+  }
+}

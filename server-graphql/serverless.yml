@@ -1,0 +1,71 @@
+service: whatdidieat-graphql
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+  - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        Fn::GetAtt:
+          - entitiesTable
+          - Arn
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+
+package:
+  exclude:
+    - node_modules/**/*
+  include: handler.ts
+
+functions:
+  query:
+    handler: src/handler.query
+    events:
+      - http:
+          path: graphql
+          method: get
+          cors: true
+      - http:
+          path: graphql
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    entitiesTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: entity_id
+            AttributeType: S
+          - AttributeName: related_entity_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: entity_id
+            KeyType: HASH
+          - AttributeName: related_entity_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

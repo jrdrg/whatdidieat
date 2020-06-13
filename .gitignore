@@ -6,3 +6,5 @@ npm-debug.log
 .env
 yarn-error.log
 build/
+third_party_licenses
+.build
