@@ -11,7 +11,7 @@ var token = localStorage.getItem("token");
 
 var token$1 = (token == null) ? /* None */0 : [token];
 
-Aws$WhatDidIEat.Amplify[/* configure */0](Util$WhatDidIEat.Env[/* get */0]("IDENTITY_POOL_ID"), Util$WhatDidIEat.Env[/* get */0]("REGION"), Util$WhatDidIEat.Env[/* get */0]("USER_POOL_ID"), Util$WhatDidIEat.Env[/* get */0]("USER_POOL_WEB_CLIENT_ID"));
+Aws$WhatDidIEat.Amplify[/* configure */1](Util$WhatDidIEat.Env[/* get */0]("IDENTITY_POOL_ID"), Util$WhatDidIEat.Env[/* get */0]("REGION"), Util$WhatDidIEat.Env[/* get */0]("USER_POOL_ID"), Util$WhatDidIEat.Env[/* get */0]("USER_POOL_WEB_CLIENT_ID"));
 
 ReactDOMRe.renderToElementWithId(ReasonReact.element(/* None */0, /* None */0, App$WhatDidIEat.make(token$1, /* array */[])), "app");
 

@@ -30,12 +30,18 @@ module DynamoDb = {
   };
   type itemT('a) = {. "_Item": Js.Nullable.t('a)};
   type scanResultT('a) = {. "_Items": Js.Nullable.t(list('a))};
+  /*
+   Externals
+   */
   [@bs.new] [@bs.module "aws-sdk"] [@bs.scope "DynamoDB"]
   external documentClient : unit => clientT = "DocumentClient";
   [@bs.send.pipe: clientT]
   external get : (getParamsT('a), callbackT('data)) => unit = "";
   [@bs.send.pipe: clientT]
   external scan : (scanParamsT('a), callbackT('data)) => unit = "";
+  /*
+   Get a record from a dynamodb table, overriding the external function
+   */
   let get =
       (table: string, key: 'a, client: clientT)
       : Js.Promise.t(itemT('b)) =>
@@ -51,6 +57,9 @@ module DynamoDb = {
            }
          )
     );
+  /*
+   Scan records from a dynamodb table, overriding the external function
+   */
   let scan =
       (~limit: int=100, table: string, client: clientT)
       : Js.Promise.t(scanResultT('b)) =>
@@ -67,6 +76,9 @@ module DynamoDb = {
     );
 };
 
+/*
+ Send an OK result
+ */
 let okResult = body =>
   AwsLambda.APIGatewayProxy.result(
     ~statusCode=200,
@@ -74,6 +86,9 @@ let okResult = body =>
     (),
   );
 
+/*
+ Send an error result
+ */
 let errorResult =
     (~statusCode=500, ~requestId: option(string)=?, message: string) =>
   AwsLambda.APIGatewayProxy.result(
@@ -88,6 +103,9 @@ let errorResult =
     (),
   );
 
+/*
+ Get a parameter value from the query string
+ */
 let queryStringParam = (event, paramName) =>
   event##queryStringParameters
   |> Js.Null.toOption

@@ -19,10 +19,9 @@ module Amplify = {
     "_Username": string,
     "_Password": string,
   };
-  type userT;
   type resultT;
-  type loginResultT = {. "challengeName": Js.Nullable.t(string)};
-  type loginErrorT =
+  type userT = {. "challengeName": Js.Nullable.t(string)};
+  type errorT =
     | Message(string)
     | Response(
         {
@@ -33,9 +32,37 @@ module Amplify = {
         },
       );
   type loginResult =
-    | LoginSuccessful(loginResultT)
-    | LoginFailure(loginErrorT)
-    | LoginChallenge(string);
+    | LoginSuccessful(userT)
+    | LoginFailure(errorT)
+    | LoginChallenge(string, userT);
+  type passwordChangeResult =
+    | PasswordChanged
+    | PasswordChangeError(errorT);
+  /*
+   Convert a JS AWS error into a typed obj
+   */
+  let errorToObj = err =>
+    switch (err |> Obj.magic |> Js.Json.classify) {
+    | Js.Json.JSONObject(obj) =>
+      let (code, message, name) =
+        ["code", "message", "name"]
+        |> List.map(Js.Dict.get(obj))
+        |> List.map(Js.Option.andThen((. o) => Js.Json.decodeString(o)))
+        |> List.map(Js.Nullable.fromOption)
+        |> (
+          l =>
+            switch (l) {
+            | [c, m, n] => (c, m, n)
+            | _ => (Js.Nullable.null, Js.Nullable.null, Js.Nullable.null)
+            }
+        );
+      Response({"code": code, "message": message, "name": name});
+    | Js.Json.JSONString(str) => Message(str)
+    | _ =>
+      let errMsg =
+        err |> Js.Json.stringifyAny |> Js.Option.getWithDefault("");
+      Message("An error occurred: " ++ errMsg);
+    };
   /*
    Configure AWS identity/user pools
    */
@@ -56,12 +83,52 @@ module Amplify = {
         "userPoolWebClientId": userPoolWebClientId,
       },
     });
-  [@bs.module "aws-amplify/lib/Auth"]
-  external currentAuthenticatedUser : unit => Js.Promise.t(userT) = "";
-  [@bs.module "aws-amplify/lib/Auth"]
-  external changePassword : (userT, string, string) => resultT = "";
+  /*
+   Get the current authenticated user
+   */
   [@bs.module "aws-amplify/lib/Auth"] [@bs.scope "default"]
-  external signIn : (string, string) => Js.Promise.t('a) = "";
+  external currentAuthenticatedUser : unit => Js.Promise.t(userT) = "";
+  /*
+   Change the password for a currently authenticated user
+   */
+  [@bs.module "aws-amplify/lib/Auth"] [@bs.scope "default"]
+  external changePassword : (userT, string, string) => Js.Promise.t(unit) =
+    "";
+  let changePassword =
+      (user: userT, ~oldPassword: string, ~newPassword: string) =>
+    Js.Promise.(
+      changePassword(user, oldPassword, newPassword)
+      |> then_(result => {
+           Js.log2("Ok", result);
+           resolve(PasswordChanged);
+         })
+      |> catch(err => {
+           Js.log2("Error", err);
+           resolve(PasswordChangeError(errorToObj(err)));
+         })
+    );
+  /*
+   Complete the new password flow for a user created in AWS admin console
+   */
+  [@bs.module "aws-amplify/lib/Auth"] [@bs.scope "default"]
+  external completeNewPassword : (userT, string) => Js.Promise.t(unit) = "";
+  let completeNewPassword = (user: userT, ~newPassword: string) =>
+    Js.Promise.(
+      completeNewPassword(user, newPassword)
+      |> then_(result => {
+           Js.log2("OK!", result);
+           resolve(PasswordChanged);
+         })
+      |> catch(err => {
+           Js.log2("Error completing new password", err);
+           resolve(PasswordChangeError(errorToObj(err)));
+         })
+    );
+  /*
+   Sign into AWS
+   */
+  [@bs.module "aws-amplify/lib/Auth"] [@bs.scope "default"]
+  external signIn : (string, string) => Js.Promise.t(userT) = "";
   let signIn = (~username: string, ~password: string) =>
     Js.Promise.(
       signIn(username, password)
@@ -69,46 +136,11 @@ module Amplify = {
            Js.log(result);
            let loginResult =
              switch (result##challengeName |> Js.Nullable.toOption) {
-             | Some(challenge) => LoginChallenge(challenge)
+             | Some(challenge) => LoginChallenge(challenge, result)
              | None => LoginSuccessful(result)
              };
            resolve(loginResult);
          })
-      |> catch(err =>
-           resolve(
-             switch (err |> Obj.magic |> Js.Json.classify) {
-             | Js.Json.JSONObject(obj) =>
-               let (code, message, name) =
-                 ["code", "message", "name"]
-                 |> List.map(Js.Dict.get(obj))
-                 |> List.map(
-                      Js.Option.andThen((. o) => Js.Json.decodeString(o)),
-                    )
-                 |> List.map(Js.Nullable.fromOption)
-                 |> (
-                   l =>
-                     switch (l) {
-                     | [c, m, n] => (c, m, n)
-                     | _ => (
-                         Js.Nullable.null,
-                         Js.Nullable.null,
-                         Js.Nullable.null,
-                       )
-                     }
-                 );
-               LoginFailure(
-                 Response({"code": code, "message": message, "name": name}),
-               );
-             | Js.Json.JSONString(str) => LoginFailure(Message(str))
-             | _ =>
-               let errMsg =
-                 err |> Js.Json.stringifyAny |> Js.Option.getWithDefault("");
-               LoginFailure(Message("An error occurred: " ++ errMsg));
-             },
-           )
-         )
+      |> catch(err => resolve(LoginFailure(errorToObj(err))))
     );
-  let changePassword =
-      (~oldPassword: string, ~newPassword: string, user: userT) =>
-    changePassword(user, oldPassword, newPassword);
 };
