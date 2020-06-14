@@ -1,15 +1,19 @@
 import AWS from "aws-sdk";
 
-export const mealResolvers = (_client: AWS.DynamoDB.DocumentClient) => ({
-  id: (obj: any) => {
-    return obj.entityId;
+import { MealResolvers } from "../graphQLTypes";
+
+export const Meal: MealResolvers = {
+  id: (obj) => {
+    console.log("ID", obj);
+    return obj.id;
   },
-  date: (obj: any) => {
+  date: (obj) => {
     console.log("DATE", obj);
     return obj.date;
   },
-
-  recipe: () => {
-    return { id: "1" };
+  recipe: (obj) => {
+    console.log("RECIPE", obj);
+    // return { id: obj.data, name: "Meal recipe" + obj.name };
+    return obj.recipe || null;
   },
-});
+};

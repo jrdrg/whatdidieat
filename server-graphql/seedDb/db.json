@@ -1,0 +1,24 @@
+[
+  {
+    "pk": "MEAL-12345",
+    "sk": "MEAL",
+    "data": "RECIPE-2",
+    "date": "2020-06-01",
+    "name": "Test Recipe"
+  },
+  {
+    "pk": "MEAL-12346",
+    "sk": "MEAL",
+    "data": "RECIPE-2",
+    "date": "2020-06-05",
+    "name": "Test Recipe"
+  },
+  {
+    "pk": "RECIPE-2",
+    "sk": "RECIPE",
+    "data": "Test Recipe",
+    "date": "2020-06-05",
+    "notes": "some notes",
+    "url": "http://example.com/"
+  }
+]

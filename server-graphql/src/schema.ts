@@ -42,7 +42,7 @@ export const schema = gql`
   type Meal {
     id: ID!
     date: String!
-    recipe: Recipe!
+    recipe: Recipe
   }
 
   type Recipe {

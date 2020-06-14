@@ -30,6 +30,14 @@ custom:
   dynamodb:
     stages:
       - dev
+    start:
+      migrate: true
+      seed: true
+    seed:
+      db:
+        sources:
+          - table: ${self:provider.environment.DYNAMODB_TABLE}
+            sources: [./seedDb/db.json]
 
 package:
   exclude:
@@ -57,15 +65,29 @@ resources:
       Properties:
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
         AttributeDefinitions:
-          - AttributeName: entity_id
+          - AttributeName: pk
             AttributeType: S
-          - AttributeName: related_entity_id
+          - AttributeName: sk
+            AttributeType: S
+          - AttributeName: data
             AttributeType: S
         KeySchema:
-          - AttributeName: entity_id
+          - AttributeName: pk
             KeyType: HASH
-          - AttributeName: related_entity_id
+          - AttributeName: sk
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: sk
+                KeyType: HASH
+              - AttributeName: data
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
