@@ -1,6 +1,7 @@
 import { ApolloServer } from "apollo-server-lambda";
 import AWS from "aws-sdk";
 import dotenv from "dotenv";
+import * as dataSources from "./dataSources";
 import { schema } from "./schema";
 import { resolvers } from "./resolvers";
 
@@ -24,6 +25,9 @@ const dynamoDb = createDynamoDb();
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers: resolvers as any,
+  dataSources: () => ({
+    meals: new dataSources.MealDataSource(dynamoDb),
+  }),
   context: (ctx) => {
     console.log("CTX", ctx);
     return {

@@ -1,11 +1,12 @@
 import { v4 as uuid } from "uuid";
 
 import { Resolvers } from "../graphQLTypes";
-import { Context } from "../types";
+import { ResolverContext } from "../types";
 import { Meal } from "./Meal";
 import { Query } from "./Query";
+import { Recipe } from "./Recipe";
 
-export const resolvers: Resolvers<Context> = {
+export const resolvers: Resolvers<ResolverContext> = {
   Query,
 
   Mutation: {
@@ -72,15 +73,5 @@ export const resolvers: Resolvers<Context> = {
   },
 
   Meal,
-
-  Recipe: {
-    id: (obj: any) => {
-      console.log("RECIPE ID", obj);
-      return obj.id ?? obj.pk ?? obj.data;
-    },
-    name: (obj: any) => {
-      console.log("NAME", obj, obj.data);
-      return obj.name ?? obj.data ?? "Unnamed";
-    },
-  },
+  Recipe,
 };

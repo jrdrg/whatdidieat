@@ -1,5 +1,3 @@
-import AWS from "aws-sdk";
-
 import { MealResolvers } from "../graphQLTypes";
 
 export const Meal: MealResolvers = {
