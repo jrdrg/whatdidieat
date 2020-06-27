@@ -9,7 +9,8 @@ import { Context } from "./types";
 dotenv.config();
 
 function createDynamoDb() {
-  if (process.env.IS_LOCAL === "true") {
+  if (process.env.IS_OFFLINE === "true") {
+    console.log("Running in offline mode.");
     return new AWS.DynamoDB.DocumentClient({
       region: "localhost",
       endpoint: "http://localhost:8000",

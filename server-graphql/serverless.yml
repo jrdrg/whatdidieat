@@ -9,7 +9,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: us-east-1
 
   iamRoleStatements:
@@ -22,9 +22,17 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource:
-        Fn::GetAtt:
-          - entitiesTable
-          - Arn
+        - { "Fn::GetAtt": ["entitiesTable", "Arn"] }
+        - {
+            "Fn::Join":
+              [
+                "/",
+                [{ "Fn::GetAtt": ["entitiesTable", "Arn"] }, "index", "GSI1"],
+              ],
+          }
+  environment:
+    REGION: "${self:provider.region}"
+    STAGE: "${self:provider.stage}"
 
 custom:
   dynamodb:
@@ -40,8 +48,6 @@ custom:
             sources: [./seedDb/db.json]
 
 package:
-  exclude:
-    - node_modules/**/*
   include: handler.ts
 
 functions:
@@ -59,6 +65,10 @@ functions:
 
 resources:
   Resources:
+    userPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${self:provider.stage}
     entitiesTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
