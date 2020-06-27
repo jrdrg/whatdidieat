@@ -18,7 +18,7 @@ export const schema = gql`
 
   input AddMealMutationInput {
     date: String!
-    recipe: RecipeInput!
+    recipes: [RecipeInput!]!
   }
 
   input RecipeInput {
@@ -42,7 +42,7 @@ export const schema = gql`
   type Meal {
     id: ID!
     date: String!
-    recipe: Recipe
+    recipe: [Recipe]
   }
 
   type Recipe {
@@ -50,6 +50,7 @@ export const schema = gql`
     name: String!
     url: String
     notes: String
+    ingredients: [Ingredient]
   }
 
   type User {

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import * as dataSources from "./dataSources";
 import { schema } from "./schema";
 import { resolvers } from "./resolvers";
+import { Context } from "./types";
 
 dotenv.config();
 
@@ -28,10 +29,12 @@ const server = new ApolloServer({
   dataSources: () => ({
     meals: new dataSources.MealDataSource(dynamoDb),
   }),
-  context: (ctx) => {
+  context: (ctx): Context => {
     console.log("CTX", ctx);
     return {
       dynamoDb,
+      // todo: get this from somewhere
+      userId: "1",
     };
   },
   playground: {

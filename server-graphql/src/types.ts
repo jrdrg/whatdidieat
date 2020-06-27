@@ -3,6 +3,7 @@ import { DataSources } from "./dataSources";
 
 export type Context = {
   dynamoDb: AWS.DynamoDB.DocumentClient;
+  userId: string;
 };
 
 export type ResolverContext = Context & {

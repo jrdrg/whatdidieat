@@ -1,24 +1,105 @@
 [
   {
-    "pk": "MEAL-12345",
-    "sk": "MEAL",
-    "data": "RECIPE-2",
-    "date": "2020-06-01",
-    "name": "Test Recipe"
+    "pk": "USER#1",
+    "sk": "USER",
+    "data": "test@example.com"
   },
   {
-    "pk": "MEAL-12346",
-    "sk": "MEAL",
-    "data": "RECIPE-2",
-    "date": "2020-06-05",
-    "name": "Test Recipe"
+    "pk": "MEAL#1",
+    "sk": "USER#1#MEAL",
+    "data": "2020-06-14",
+    "recipes": "Chicken curry|Steamed rice"
   },
   {
-    "pk": "RECIPE-2",
+    "pk": "MEAL#1",
+    "sk": "RECIPE#1",
+    "data": "Chicken curry"
+  },
+  {
+    "pk": "MEAL#1",
+    "sk": "RECIPE#3",
+    "data": "Steamed rice"
+  },
+  {
+    "pk": "RECIPE#1",
     "sk": "RECIPE",
-    "data": "Test Recipe",
-    "date": "2020-06-05",
-    "notes": "some notes",
-    "url": "http://example.com/"
+    "data": "Chicken curry",
+    "url": "http://example.com/chicken-curry",
+    "notes": "make chicken curry"
+  },
+  {
+    "pk": "RECIPE#1",
+    "sk": "INGREDIENT#1",
+    "data": "Chicken",
+    "amount": "lb#2"
+  },
+  {
+    "pk": "RECIPE#1",
+    "sk": "INGREDIENT#2",
+    "data": "Curry",
+    "amount": "tbsp#1"
+  },
+  {
+    "pk": "RECIPE#1",
+    "sk": "INGREDIENT#3",
+    "data": "Coconut milk",
+    "amount": "oz#16"
+  },
+  {
+    "pk": "MEAL#2",
+    "sk": "USER#1#MEAL",
+    "data": "2020-06-25",
+    "recipes": "Grilled chicken"
+  },
+  {
+    "pk": "MEAL#2",
+    "sk": "RECIPE#2",
+    "data": "Grilled chicken"
+  },
+  {
+    "pk": "RECIPE#2",
+    "sk": "RECIPE",
+    "data": "Grilled chicken",
+    "url": "http://example.com/grilled-chicken",
+    "notes": "grill the chicken"
+  },
+  {
+    "pk": "RECIPE#2",
+    "sk": "INGREDIENT#1",
+    "data": "Chicken",
+    "amount": "lb#1"
+  },
+  {
+    "pk": "RECIPE#3",
+    "sk": "RECIPE",
+    "data": "Steamed rice",
+    "url": "",
+    "notes": "steam the rice"
+  },
+  {
+    "pk": "RECIPE#3",
+    "sk": "INGREDIENT#4",
+    "data": "Rice",
+    "amount": "cup#1"
+  },
+  {
+    "pk": "INGREDIENT#1",
+    "sk": "INGREDIENT",
+    "data": "Chicken"
+  },
+  {
+    "pk": "INGREDIENT#2",
+    "sk": "INGREDIENT",
+    "data": "Curry"
+  },
+  {
+    "pk": "INGREDIENT#3",
+    "sk": "INGREDIENT",
+    "data": "Coconut milk"
+  },
+  {
+    "pk": "INGREDIENT#4",
+    "sk": "INGREDIENT",
+    "data": "Rice"
   }
 ]

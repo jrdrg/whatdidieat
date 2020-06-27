@@ -29,7 +29,7 @@ export type MutationAddMealArgs = {
 
 export type AddMealMutationInput = {
   date: Scalars['String'];
-  recipe: RecipeInput;
+  recipes: Array<RecipeInput>;
 };
 
 export type RecipeInput = {
@@ -56,7 +56,7 @@ export type Meal = {
   __typename?: 'Meal';
   id: Scalars['ID'];
   date: Scalars['String'];
-  recipe?: Maybe<Recipe>;
+  recipe?: Maybe<Array<Maybe<Recipe>>>;
 };
 
 export type Recipe = {
@@ -65,6 +65,7 @@ export type Recipe = {
   name: Scalars['String'];
   url?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
+  ingredients?: Maybe<Array<Maybe<Ingredient>>>;
 };
 
 export type User = {
@@ -214,7 +215,7 @@ export type IngredientTypeResolvers<ContextType = any, ParentType extends Resolv
 export type MealResolvers<ContextType = any, ParentType extends ResolversParentTypes['Meal'] = ResolversParentTypes['Meal']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  recipe?: Resolver<Maybe<ResolversTypes['Recipe']>, ParentType, ContextType>;
+  recipe?: Resolver<Maybe<Array<Maybe<ResolversTypes['Recipe']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
@@ -223,6 +224,7 @@ export type RecipeResolvers<ContextType = any, ParentType extends ResolversParen
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ingredients?: Resolver<Maybe<Array<Maybe<ResolversTypes['Ingredient']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
