@@ -1,12 +1,13 @@
 {
   "name": "what-did-i-eat",
   "reason": {
-    "react-jsx": 2
+    "react-jsx": 3
   },
   "sources": {
     "dir": "src",
     "subdirs": true
   },
+  "bsc-flags": ["-bs-super-errors", "-bs-no-version-header"],
   "package-specs": [
     {
       "module": "commonjs",
@@ -15,12 +16,10 @@
   ],
   "suffix": ".bs.js",
   "namespace": true,
-  "bs-dependencies": [
-    "@glennsl/bs-json",
-    "reason-react"
+  "bs-dependencies": ["reason-react", "reason-apollo"],
+  "ppx-flags": [
+    "@baransu/graphql_ppx_re/ppx",
+    ["@dylanirlbeck/tailwind-ppx/tailwind-ppx"]
   ],
-  "refmt": 3,
-  "warnings": {
-    "error": "+5"
-  }
+  "refmt": 3
 }

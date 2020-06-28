@@ -1,13 +1,13 @@
+/* use dotenv via parcel to load env vars */
 module Env = {
-  /* [@bs.module "dotenv"] external config : unit => unit = ""; */
-  [@bs.val] [@bs.scope "process"] external env : Js.Dict.t(string) = "";
-  let get = key => key |> Js.Dict.get(env) |> Js.Option.getWithDefault("");
+  let graphqlServer: string = [%bs.raw {|process.env.GRAPHQL_SERVER|}];
 };
 
 module LocalStorage = {
   [@bs.val] [@bs.scope "localStorage"] [@bs.return nullable]
-  external get : string => option(string) = "getItem";
+  external get: string => option(string) = "getItem";
   [@bs.val] [@bs.scope "localStorage"]
-  external set : (string, string) => string = "setItem";
-  [@bs.val] [@bs.scope "localStorage"] external clear : unit => unit = "";
+  external set: (string, string) => string = "setItem";
+  [@bs.val] [@bs.scope "localStorage"]
+  external clear: unit => unit = "localStorage";
 };
