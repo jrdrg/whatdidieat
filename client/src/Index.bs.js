@@ -5,15 +5,8 @@ var ReactDom = require("react-dom");
 var ReactApollo = require("react-apollo");
 var App$WhatDidIEat = require("./App.bs.js");
 var Client$WhatDidIEat = require("./Client.bs.js");
-var ExampleStyles$WhatDidIEat = require("./ExampleStyles.bs.js");
 
 ((require("./tailwind.css")));
-
-var style = document.createElement("style");
-
-document.head.appendChild(style);
-
-style.innerHTML = ExampleStyles$WhatDidIEat.style;
 
 function makeContainer(text) {
   var container = document.createElement("div");
@@ -32,8 +25,7 @@ function makeContainer(text) {
 ReactDom.render(React.createElement(ReactApollo.ApolloProvider, {
           client: Client$WhatDidIEat.instance,
           children: React.createElement(App$WhatDidIEat.make, { })
-        }), makeContainer("app"));
+        }), document.getElementById("app"));
 
-exports.style = style;
 exports.makeContainer = makeContainer;
 /*  Not a pure module */

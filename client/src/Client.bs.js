@@ -7,8 +7,6 @@ var ApolloInMemoryCache = require("reason-apollo/src/ApolloInMemoryCache.bs.js")
 
 var graphqlServer = Util$WhatDidIEat.Env.graphqlServer;
 
-console.log("GQL server", graphqlServer);
-
 var inMemoryCache = ApolloInMemoryCache.createInMemoryCache(undefined, undefined, undefined);
 
 var httpLink = ApolloLinks.createHttpLink(graphqlServer, undefined, undefined, undefined, undefined, undefined, undefined);
@@ -19,4 +17,4 @@ exports.graphqlServer = graphqlServer;
 exports.inMemoryCache = inMemoryCache;
 exports.httpLink = httpLink;
 exports.instance = instance;
-/*  Not a pure module */
+/* inMemoryCache Not a pure module */

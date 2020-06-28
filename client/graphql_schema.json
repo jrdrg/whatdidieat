@@ -1197,7 +1197,7 @@
             "deprecationReason": null
           },
           {
-            "name": "recipe",
+            "name": "recipes",
             "description": null,
             "args": [],
             "type": {
