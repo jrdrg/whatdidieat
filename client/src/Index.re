@@ -29,8 +29,10 @@ let makeContainer = text => {
 };
 
 ReactDOMRe.render(
-  <ReasonApollo.Provider client=Client.instance>
-    <App />
-  </ReasonApollo.Provider>,
+  <ApolloHooks.Provider client=Client.instance>
+    <ReasonApollo.Provider client=Client.instance>
+      <App />
+    </ReasonApollo.Provider>
+  </ApolloHooks.Provider>,
   document##getElementById("app"),
 );

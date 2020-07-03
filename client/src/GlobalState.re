@@ -5,13 +5,11 @@ type view =
 type state = {view};
 
 type action =
-  | NavigateToList
-  | NavigateToMeal(string);
+  | NavigateTo(view);
 
 let reducer = (_state: state, action: action): state => {
   switch (action) {
-  | NavigateToList => {view: List}
-  | NavigateToMeal(id) => {view: Meal(id)}
+  | NavigateTo(view) => {view: view}
   };
 };
 

@@ -5,6 +5,7 @@ var ReactDom = require("react-dom");
 var ReactApollo = require("react-apollo");
 var App$WhatDidIEat = require("./App.bs.js");
 var Client$WhatDidIEat = require("./Client.bs.js");
+var ReactHooks = require("@apollo/react-hooks");
 
 ((require("./tailwind.css")));
 
@@ -22,9 +23,12 @@ function makeContainer(text) {
   return content;
 }
 
-ReactDom.render(React.createElement(ReactApollo.ApolloProvider, {
+ReactDom.render(React.createElement(ReactHooks.ApolloProvider, {
           client: Client$WhatDidIEat.instance,
-          children: React.createElement(App$WhatDidIEat.make, { })
+          children: React.createElement(ReactApollo.ApolloProvider, {
+                client: Client$WhatDidIEat.instance,
+                children: React.createElement(App$WhatDidIEat.make, { })
+              })
         }), document.getElementById("app"));
 
 exports.makeContainer = makeContainer;

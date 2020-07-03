@@ -3,15 +3,9 @@
 var React = require("react");
 
 function reducer(_state, action) {
-  if (action) {
-    return {
-            view: /* Meal */[action[0]]
-          };
-  } else {
-    return {
-            view: /* List */0
-          };
-  }
+  return {
+          view: action[0]
+        };
 }
 
 var initialState = {

@@ -1,26 +1,22 @@
 'use strict';
 
-var Curry = require("bs-platform/lib/js/curry.js");
 var React = require("react");
-var ContextProvider$WhatDidIEat = require("./ContextProvider.bs.js");
+var Styles$WhatDidIEat = require("./Styles.bs.js");
+var GlobalState$WhatDidIEat = require("./GlobalState.bs.js");
 
 function MealListItem(Props) {
   var date = Props.date;
   var recipes = Props.recipes;
   var id = Props.id;
-  var match = React.useContext(ContextProvider$WhatDidIEat.ContextProvider.context);
-  var dispatch = match[1];
+  React.useContext(GlobalState$WhatDidIEat.ContextProvider.context);
   return React.createElement("div", {
-              className: "border-gray-100 rounded-sm p-2"
+              className: "border-gray-400 border-t border-l border-b border-r rounded-md p-2 m-2 shadow-sm"
             }, React.createElement("div", {
                   className: "text-gray-900"
-                }, React.createElement("a", {
-                      href: "#",
-                      onClick: (function (e) {
-                          e.preventDefault();
-                          return Curry._1(dispatch, /* NavigateToMeal */[id]);
-                        })
-                    }, date)), React.createElement("div", {
+                }, React.createElement(Styles$WhatDidIEat.Link.make, {
+                      href: "/meals/" + (String(id) + ""),
+                      children: date
+                    })), React.createElement("div", {
                   className: "text-gray-700"
                 }, recipes));
 }

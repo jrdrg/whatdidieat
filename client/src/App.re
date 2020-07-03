@@ -1,15 +1,19 @@
 [@react.component]
 let make = () => {
   let (state, dispatch) =
-    React.useReducer(ContextProvider.reducer, ContextProvider.initialState);
+    React.useReducer(GlobalState.reducer, GlobalState.initialState);
 
-  <ContextProvider.ContextProvider value=(state, dispatch)>
+  let url = ReasonReactRouter.useUrl();
+  Js.log(url.path);
+
+  <GlobalState.ContextProvider value=(state, dispatch)>
     <>
       <NavHeader />
-      {switch (state.view) {
-       | List => <MealsList />
-       | Meal(id) => <MealDetails id />
+      {switch (url.path) {
+       | [] => <MealsList />
+       | ["meals", id] => <MealDetails id />
+       | _ => <NotFound />
        }}
     </>
-  </ContextProvider.ContextProvider>;
+  </GlobalState.ContextProvider>;
 };
