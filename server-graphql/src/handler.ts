@@ -24,6 +24,10 @@ function createDynamoDb() {
 
 const dynamoDb = createDynamoDb();
 
+if (!process.env.DYNAMODB_TABLE) {
+  throw new Error("Unable to load table name from environment variables.");
+}
+
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers: resolvers as any,

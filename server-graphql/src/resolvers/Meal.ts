@@ -9,9 +9,9 @@ export const Meal: MealResolvers = {
     console.log("DATE", obj);
     return obj.date;
   },
-  recipe: (obj) => {
+  recipes: (obj) => {
     console.log("RECIPE", obj);
     // return { id: obj.data, name: "Meal recipe" + obj.name };
-    return obj.recipe || null;
+    return obj.recipes || null;
   },
 };

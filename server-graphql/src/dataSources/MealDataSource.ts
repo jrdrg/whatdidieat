@@ -1,26 +1,17 @@
 import { DataSource, DataSourceConfig } from "apollo-datasource";
-import AWS from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { v4 as uuid } from "uuid";
 
 import { Context } from "../types";
 import { promisify } from "../utils";
+import { QueryCallback } from "./types";
 
 type Meal = {
   id: string;
   date: string;
 };
 
-type QueryCallback = Exclude<
-  Parameters<AWS.DynamoDB.DocumentClient["query"]>[1],
-  undefined
->;
-
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
-
-if (!TABLE_NAME) {
-  throw new Error("Unable to load table name from environment variables.");
-}
 
 export class MealDataSource extends DataSource<Context> {
   private context: Context | undefined;
@@ -55,21 +46,21 @@ export class MealDataSource extends DataSource<Context> {
 
     const mealId = uuid();
 
-    const writeRecipes = input.recipes.flatMap(
-      (recipe): DocumentClient.TransactWriteItem[] => {
+    const writeItems: DocumentClient.TransactWriteItem[] = [
+      {
+        Put: {
+          TableName: tableName,
+          Item: {
+            pk: `MEAL#${mealId}`,
+            sk: `USER#${userId}#MEAL`,
+            data: input.date,
+            recipes: input.recipes.map((r) => r.name).join("|"),
+          },
+        },
+      },
+      ...input.recipes.flatMap((recipe) => {
         const recipeId = recipe.id || uuid();
         return [
-          {
-            Put: {
-              TableName: tableName,
-              Item: {
-                pk: `MEAL#${mealId}`,
-                sk: `USER#${userId}#MEAL`,
-                data: input.date,
-                recipes: recipe.name,
-              },
-            },
-          },
           {
             Put: {
               TableName: tableName,
@@ -100,13 +91,13 @@ export class MealDataSource extends DataSource<Context> {
             },
           },
         ];
-      }
-    );
+      }),
+    ];
 
     return promisify((cb) => {
       this.dynamoDb.transactWrite(
         {
-          TransactItems: writeRecipes,
+          TransactItems: writeItems,
         },
         cb
       );
@@ -127,7 +118,11 @@ export class MealDataSource extends DataSource<Context> {
     });
   }
 
-  async getMeals(): Promise<Meal[]> {
+  async getMeals(
+    options: {
+      sortDescending?: boolean;
+    } = {}
+  ): Promise<Meal[]> {
     const userId = this.context?.userId;
     if (!userId) {
       throw new Error("Cannot retrieve items without a user id.");
@@ -142,6 +137,7 @@ export class MealDataSource extends DataSource<Context> {
             ExpressionAttributeValues: {
               ":type": `USER#${userId}#MEAL`,
             },
+            ScanIndexForward: !options?.sortDescending,
           },
           cb
         );
@@ -154,9 +150,9 @@ export class MealDataSource extends DataSource<Context> {
             (item.recipes as string | undefined)?.split("|") || [];
 
           return {
-            id: item.pk ?? "?",
+            id: item.pk?.replace("MEAL#", "") ?? "?",
             date: item.data,
-            recipe: recipes.map((name) => ({
+            recipes: recipes.map((name) => ({
               id: null,
               name,
               notes: null,
@@ -166,6 +162,7 @@ export class MealDataSource extends DataSource<Context> {
         }) || []
       );
     } catch (e) {
+      console.error("Error retrieving meals: ", e);
       throw e;
     }
   }

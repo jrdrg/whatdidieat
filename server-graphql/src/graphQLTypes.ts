@@ -56,7 +56,7 @@ export type Meal = {
   __typename?: 'Meal';
   id: Scalars['ID'];
   date: Scalars['String'];
-  recipe?: Maybe<Array<Maybe<Recipe>>>;
+  recipes?: Maybe<Array<Maybe<Recipe>>>;
 };
 
 export type Recipe = {
@@ -215,7 +215,7 @@ export type IngredientTypeResolvers<ContextType = any, ParentType extends Resolv
 export type MealResolvers<ContextType = any, ParentType extends ResolversParentTypes['Meal'] = ResolversParentTypes['Meal']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  recipe?: Resolver<Maybe<Array<Maybe<ResolversTypes['Recipe']>>>, ParentType, ContextType>;
+  recipes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Recipe']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 

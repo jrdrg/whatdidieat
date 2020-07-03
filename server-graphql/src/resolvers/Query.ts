@@ -6,7 +6,7 @@ export const Query: QueryResolvers<ResolverContext> = {
     return [];
   },
   meals: (_obj, _args, ctx) => {
-    return ctx.dataSources.meals.getMeals();
+    return ctx.dataSources.meals.getMeals({ sortDescending: true });
   },
   recipes: (_obj, _args, ctx) => {
     return new Promise((res, rej) => {
@@ -27,7 +27,7 @@ export const Query: QueryResolvers<ResolverContext> = {
           console.log("recipes", data);
           return res(
             data.Items?.map((item) => ({
-              id: item.pk,
+              id: item.pk.replace("RECIPE#", ""),
               name: item.data,
             }))
           );
