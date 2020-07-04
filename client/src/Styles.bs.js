@@ -48,7 +48,7 @@ function Styles$Button(Props) {
       "bg-gray-400",
       "text-gray-800"
     ] : /* tuple */[
-      "bg-blue-700",
+      "bg-orange-700",
       "text-gray-200"
     ];
   return React.createElement("button", {
@@ -64,12 +64,19 @@ var Button = {
 function Styles$Input(Props) {
   var label = Props.label;
   var name = Props.name;
+  var onChange = Props.onChange;
+  var type_Opt = Props.type_;
+  var value = Props.value;
+  var type_ = type_Opt !== undefined ? type_Opt : /* Text */0;
   return React.createElement(React.Fragment, undefined, React.createElement("div", undefined, React.createElement("label", {
                       className: "font-semibold",
                       htmlFor: name
                     }, label)), React.createElement("div", undefined, React.createElement("input", {
                       className: "border border-gray-700 rounded-sm p-1",
-                      name: name
+                      name: name,
+                      type: type_ ? "date" : "text",
+                      value: value,
+                      onChange: onChange
                     })));
 }
 

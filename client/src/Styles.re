@@ -30,7 +30,7 @@ module Button = {
   let make = (~buttonType=Primary, ~onClick, ~children, ()) => {
     let (color, text) =
       switch (buttonType) {
-      | Primary => ("bg-blue-700", "text-gray-200")
+      | Primary => ("bg-orange-700", "text-gray-200")
       | _ => ("bg-gray-400", "text-gray-800")
       };
 
@@ -49,8 +49,12 @@ module Button = {
 };
 
 module Input = {
+  type inputType =
+    | Text
+    | Date;
+
   [@react.component]
-  let make = (~label, ~name, ()) => {
+  let make = (~label, ~name, ~onChange, ~type_=Text, ~value, ()) => {
     <>
       <div>
         <label className="font-semibold" htmlFor=name>
@@ -58,7 +62,18 @@ module Input = {
         </label>
       </div>
       <div>
-        <input className="border border-gray-700 rounded-sm p-1" name />
+        <input
+          value
+          onChange
+          className="border border-gray-700 rounded-sm p-1"
+          name
+          type_={
+            switch (type_) {
+            | Date => "date"
+            | _ => "text"
+            }
+          }
+        />
       </div>
     </>;
   };

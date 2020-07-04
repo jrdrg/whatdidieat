@@ -7,6 +7,7 @@ var MealsList$WhatDidIEat = require("./MealsList.bs.js");
 var NavHeader$WhatDidIEat = require("./NavHeader.bs.js");
 var GlobalState$WhatDidIEat = require("./GlobalState.bs.js");
 var MealDetails$WhatDidIEat = require("./MealDetails.bs.js");
+var RecipesList$WhatDidIEat = require("./RecipesList.bs.js");
 
 function App(Props) {
   var match = React.useReducer(GlobalState$WhatDidIEat.reducer, GlobalState$WhatDidIEat.initialState);
@@ -16,17 +17,26 @@ function App(Props) {
   var tmp;
   var exit = 0;
   if (match$1) {
-    if (match$1[0] === "meals") {
-      var match$2 = match$1[1];
-      if (match$2 && !match$2[1]) {
-        tmp = React.createElement(MealDetails$WhatDidIEat.make, {
-              id: match$2[0]
-            });
-      } else {
+    switch (match$1[0]) {
+      case "meals" :
+          var match$2 = match$1[1];
+          if (match$2 && !match$2[1]) {
+            tmp = React.createElement(MealDetails$WhatDidIEat.make, {
+                  id: match$2[0]
+                });
+          } else {
+            exit = 1;
+          }
+          break;
+      case "recipes" :
+          if (match$1[1]) {
+            exit = 1;
+          } else {
+            tmp = React.createElement(RecipesList$WhatDidIEat.make, { });
+          }
+          break;
+      default:
         exit = 1;
-      }
-    } else {
-      exit = 1;
     }
   } else {
     tmp = React.createElement(MealsList$WhatDidIEat.make, { });

@@ -30,7 +30,7 @@ var Content = {
 function Modal$Header(Props) {
   var children = Props.children;
   return React.createElement("div", {
-              className: "p-4"
+              className: "pt-4 pl-4 pr-4 pb-0"
             }, React.createElement("div", {
                   className: "pb-1 border-b border-black font-bold"
                 }, children));

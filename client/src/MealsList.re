@@ -1,24 +1,27 @@
-module GetMeals = [%graphql
+module MealsListQuery = [%graphql
   {|
-query getMeals {
+query MealsList {
     meals {
+        __typename
         id
         date
         recipes {
-          name
+            __typename
+            name
         }
     }
 }
 |}
 ];
-module GetMealsQuery = ReasonApollo.CreateQuery(GetMeals);
 
 let useMeals = () => {
-  let (data, _) = ApolloHooks.useQuery(GetMeals.definition);
+  let (data, full) = ApolloHooks.useQuery(MealsListQuery.definition);
+  Js.log2("D", data);
+  Js.log2("F", full);
   data;
 };
 
-let mealListItems = (query: GetMeals.t) => {
+let mealListItems = (query: MealsListQuery.t) => {
   query##meals
   |> Js.Option.getWithDefault([||])
   |> Array.map(meal =>
@@ -35,6 +38,8 @@ let mealListItems = (query: GetMeals.t) => {
                 )
              |> Js.Array.joinWith(", ");
 
+           Js.log3(id, date, m##recipes);
+
            <MealListItem key=id id date recipes />;
          })
        ->Belt.Option.getWithDefault(React.null)
@@ -44,7 +49,6 @@ let mealListItems = (query: GetMeals.t) => {
 [@react.component]
 let make = () => {
   let data = useMeals();
-  let (isOpen, openModal, closeModal) = Modal.useModal();
 
   <Styles.Container>
     {switch (data) {
@@ -57,19 +61,7 @@ let make = () => {
            "Recent meals: "->React.string
          </div>
          {response |> mealListItems |> ReasonReact.array}
-         <Styles.Button onClick={_ => openModal()}>
-           "new"->React.string
-         </Styles.Button>
-         <Modal
-           isOpen
-           header="What did you eat?"
-           onSubmit={_ => {
-             Js.log("ok");
-             ();
-           }}
-           onClose={_ => {closeModal()}}>
-           <CreateMeal />
-         </Modal>
+         <CreateMeal />
        </div>
      }}
   </Styles.Container>;

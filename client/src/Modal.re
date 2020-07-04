@@ -20,7 +20,7 @@ module Content = {
 module Header = {
   [@react.component]
   let make = (~children, ()) => {
-    <div className="p-4">
+    <div className="pt-4 pl-4 pr-4 pb-0">
       <div className="pb-1 border-b border-black font-bold"> children </div>
     </div>;
   };

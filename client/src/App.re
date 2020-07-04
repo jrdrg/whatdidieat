@@ -11,6 +11,7 @@ let make = () => {
       <NavHeader />
       {switch (url.path) {
        | [] => <MealsList />
+       | ["recipes"] => <RecipesList />
        | ["meals", id] => <MealDetails id />
        | _ => <NotFound />
        }}
