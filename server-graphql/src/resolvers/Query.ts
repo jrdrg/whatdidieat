@@ -5,9 +5,15 @@ export const Query: QueryResolvers<ResolverContext> = {
   ingredients: (_obj, _args) => {
     return [];
   },
+
+  meal: (_obj, args, ctx) => {
+    return ctx.dataSources.meals.getMealById(args.id);
+  },
+
   meals: (_obj, _args, ctx) => {
     return ctx.dataSources.meals.getMeals({ sortDescending: true });
   },
+
   recipes: (_obj, _args, ctx) => {
     return new Promise((res, rej) => {
       ctx.dynamoDb.query(

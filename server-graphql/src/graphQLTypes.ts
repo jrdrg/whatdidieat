@@ -13,8 +13,14 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   ingredients?: Maybe<Array<Maybe<Ingredient>>>;
+  meal?: Maybe<Meal>;
   meals?: Maybe<Array<Maybe<Meal>>>;
   recipes?: Maybe<Array<Maybe<Recipe>>>;
+};
+
+
+export type QueryMealArgs = {
+  id: Scalars['String'];
 };
 
 export type Mutation = {
@@ -191,6 +197,7 @@ export type ResolversParentTypes = {
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   ingredients?: Resolver<Maybe<Array<Maybe<ResolversTypes['Ingredient']>>>, ParentType, ContextType>;
+  meal?: Resolver<Maybe<ResolversTypes['Meal']>, ParentType, ContextType, RequireFields<QueryMealArgs, 'id'>>;
   meals?: Resolver<Maybe<Array<Maybe<ResolversTypes['Meal']>>>, ParentType, ContextType>;
   recipes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Recipe']>>>, ParentType, ContextType>;
 };

@@ -8,6 +8,7 @@ export const schema = gql`
 
   type Query {
     ingredients: [Ingredient]
+    meal(id: String!): Meal
     meals: [Meal]
     recipes: [Recipe]
   }

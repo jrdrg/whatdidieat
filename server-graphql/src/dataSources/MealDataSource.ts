@@ -9,6 +9,7 @@ import { QueryCallback } from "./types";
 type Meal = {
   id: string;
   date: string;
+  recipes?: any[];
 };
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
@@ -163,6 +164,53 @@ export class MealDataSource extends DataSource<Context> {
       );
     } catch (e) {
       console.error("Error retrieving meals: ", e);
+      throw e;
+    }
+  }
+
+  async getMealById(id: string): Promise<Meal | null> {
+    const userId = this.context?.userId;
+    if (!userId) {
+      throw new Error("Cannot retrieve items without a user id.");
+    }
+    try {
+      const result = await promisify((cb: QueryCallback) => {
+        this.dynamoDb.query(
+          {
+            TableName: TABLE_NAME || "",
+            KeyConditionExpression: "pk = :id",
+            ExpressionAttributeValues: {
+              ":id": `MEAL#${id}`,
+            },
+          },
+          cb
+        );
+      });
+
+      console.log("RESULT", result);
+      return (
+        result.Items?.reduce<Meal>(
+          (meal, item) => {
+            if (item.sk.match(/USER#\d#MEAL/)) {
+              return { ...meal, date: item.data };
+            }
+            if (item.sk.match(/RECIPE/)) {
+              const recipe = {
+                id: item.sk.replace("RECIPE#", ""),
+                name: item.data,
+              };
+              return { ...meal, recipes: [...(meal.recipes || []), recipe] };
+            }
+            return meal;
+          },
+          {
+            id: id,
+            date: "",
+          }
+        ) || null
+      );
+    } catch (e) {
+      console.error(`Error retrieving meal ${id}: `, e);
       throw e;
     }
   }
