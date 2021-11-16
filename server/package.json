@@ -23,7 +23,7 @@
   "dependencies": {
     "@ahrefs/bs-aws-lambda": "^0.8.0",
     "@glennsl/bs-json": "^1.3.2",
-    "aws-sdk": "^2.234.1",
+    "aws-sdk": "^2.814.0",
     "bs-uuid": "^0.3.0"
   }
 }
